@@ -1,5 +1,9 @@
 package ch.jalu.fileduplicatefinder;
 
+import ch.jalu.fileduplicatefinder.config.ConfigurationReader;
+import ch.jalu.fileduplicatefinder.hashing.FileHasher;
+import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,18 +16,34 @@ import java.util.Set;
  */
 public class FileDuplicateFinderRunner {
 
+    private final ConfigurationReader configurationReader;
+    private final FileHasherFactory fileHasherFactory;
+
+    private FileDuplicateFinderRunner(ConfigurationReader configurationReader, FileHasherFactory fileHasherFactory) {
+        this.configurationReader = configurationReader;
+        this.fileHasherFactory = fileHasherFactory;
+    }
+
     public static void main(String... args) throws IOException {
-        String folder;
+        Path userConfig = null;
         if (args != null && args.length > 0) {
-            folder = args[0];
-        } else {
-            folder = "";
+            userConfig = Paths.get(args[0]);
         }
 
-        Path path = Paths.get(folder);
-        System.out.println("Processing '" + path.toAbsolutePath() + "'");
-        Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path);
+        FileDuplicateFinderRunner runner =
+            new FileDuplicateFinderRunner(new ConfigurationReader(userConfig), new FileHasherFactory());
+        runner.execute();
+    }
 
+    private void execute() throws IOException {
+        Path path = Paths.get(configurationReader.getRootFolder());
+        System.out.println("Processing '" + path.toAbsolutePath() + "'");
+
+        String hashAlgorithm = configurationReader.getHashAlgorithm();
+        System.out.println("Using hash algorithm '" + hashAlgorithm + "'");
+        FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
+
+        Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path, fileHasher);
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
         } else {
@@ -32,8 +52,9 @@ public class FileDuplicateFinderRunner {
         }
     }
 
-    private static Set<Map.Entry<String, Collection<String>>> processPath(Path path) throws IOException {
-        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, new FileHasher());
+    private static Set<Map.Entry<String, Collection<String>>> processPath(Path path,
+                                                                          FileHasher fileHasher) throws IOException {
+        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher);
         fileDuplicateFinder.processFiles();
         return fileDuplicateFinder.returnDuplicates();
     }

@@ -1,5 +1,6 @@
 package ch.jalu.fileduplicatefinder;
 
+import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
