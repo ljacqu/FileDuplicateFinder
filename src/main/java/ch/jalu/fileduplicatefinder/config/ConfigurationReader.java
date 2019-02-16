@@ -12,6 +12,7 @@ public class ConfigurationReader {
 
     private String rootFolder;
     private String hashAlgorithm;
+    private float maxSizeForHashingInMb;
 
 
     public ConfigurationReader(Path propertyFile) {
@@ -28,18 +29,27 @@ public class ConfigurationReader {
             throw new UncheckedIOException(e);
         }
 
-        rootFolder = Optional.ofNullable(userProperties).map(prop -> prop.getProperty("rootfolder"))
-            .orElseGet(() -> defaultProperties.getProperty("rootfolder"));
-        hashAlgorithm = Optional.ofNullable(userProperties).map(prop -> prop.getProperty("hashalgorithm"))
-            .orElseGet(() -> defaultProperties.getProperty("hashalgorithm"));
+        rootFolder = getProperty("rootFolder", userProperties, defaultProperties);
+        hashAlgorithm = getProperty("hashAlgorithm", userProperties, defaultProperties);
+        maxSizeForHashingInMb = Float.valueOf(getProperty("maxSizeForHashingInMb", userProperties, defaultProperties));
     }
 
     public String getRootFolder() {
         return rootFolder;
     }
 
+    public float getMaxSizeForHashingInMb() {
+        return maxSizeForHashingInMb;
+    }
+
     public String getHashAlgorithm() {
         return hashAlgorithm;
+    }
+
+    private static String getProperty(String key, Properties userProperties, Properties defaultProperties) {
+        return Optional.ofNullable(userProperties)
+            .map(prop -> prop.getProperty(key))
+            .orElseGet(() -> defaultProperties.getProperty(key));
     }
 
     private Properties createDefaultProperties() throws IOException {

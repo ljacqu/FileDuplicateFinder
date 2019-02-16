@@ -41,7 +41,8 @@ public class FileDuplicateFinderRunner {
 
         String hashAlgorithm = configurationReader.getHashAlgorithm();
         System.out.println("Using hash algorithm '" + hashAlgorithm + "'");
-        FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
+        FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm,
+            configurationReader.getMaxSizeForHashingInMb());
 
         Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path, fileHasher);
         if (duplicates.isEmpty()) {
