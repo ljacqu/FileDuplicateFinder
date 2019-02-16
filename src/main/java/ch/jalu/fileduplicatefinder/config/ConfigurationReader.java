@@ -61,7 +61,10 @@ public class ConfigurationReader {
     }
 
     private Properties createUserPropertiesOrNull(Path configFile) throws IOException {
-        if (configFile == null || !Files.exists(configFile)) {
+        if (configFile == null) {
+            return null;
+        } else if (!Files.exists(configFile)) {
+            System.out.println("Skipping config file '" + configFile + "' as it does not exist");
             return null;
         }
 
