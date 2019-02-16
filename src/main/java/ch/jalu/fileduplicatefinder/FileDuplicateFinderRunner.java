@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Class with main method.
@@ -48,8 +50,12 @@ public class FileDuplicateFinderRunner {
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
         } else {
-            duplicates.forEach(entry ->
-                System.out.println(entry.getKey() + ": " + String.join(", ", entry.getValue())));
+            duplicates.stream()
+                .sorted(Comparator.comparing(e -> e.getValue().size()))
+                .forEach(entry -> {
+                    String files = entry.getValue().stream().sorted().collect(Collectors.joining(", "));
+                    System.out.println(entry.getKey() + ": " + files);
+                });
         }
     }
 

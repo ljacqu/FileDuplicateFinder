@@ -26,7 +26,7 @@ public class FileDuplicateFinder {
 
     public void processFiles() throws IOException {
         processPath(rootFolder);
-        System.out.println("Processed " + filesByHash.size() + " files");
+        System.out.println("Finished after processing " + filesByHash.size() + " files");
     }
 
     private void processPath(Path path) throws IOException {
@@ -37,6 +37,9 @@ public class FileDuplicateFinder {
         } else {
             String hash = fileHasher.calculateHash(path);
             filesByHash.put(hash, path.toString());
+            if ((filesByHash.size() & 511) == 0) {
+                System.out.println("Processed " + filesByHash.size() + " files");
+            }
         }
     }
 
