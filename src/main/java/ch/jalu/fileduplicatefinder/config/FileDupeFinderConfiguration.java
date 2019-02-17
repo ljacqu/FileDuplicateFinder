@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 
+import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static com.google.common.math.IntMath.ceilingPowerOfTwo;
 
 public class FileDupeFinderConfiguration {
@@ -17,12 +18,18 @@ public class FileDupeFinderConfiguration {
     private double maxSizeForHashingInMb;
     private int progressFilesFoundInterval;
     private int progressFilesHashedInterval;
+
     private boolean outputDistribution;
+    private boolean outputDuplicates;
+    private boolean outputDifferenceFromFileReadBeforeHash;
 
     private String filterWhitelist;
     private String filterBlacklist;
     private Double filterMinSizeInMb;
     private Double filterMaxSizeInMb;
+
+    private long fileReadBeforeHashMinSizeBytes;
+    private int fileReadBeforeHashNumberOfBytes;
 
 
     public FileDupeFinderConfiguration(Path propertyFile) {
@@ -50,7 +57,11 @@ public class FileDupeFinderConfiguration {
         filterMaxSizeInMb = resolver.getDoubleOrNull("filter.fileSizeMaxInMb");
         progressFilesFoundInterval = ceilingPowerOfTwo(resolver.getInt("progress.filesFoundInterval")) - 1;
         progressFilesHashedInterval = ceilingPowerOfTwo(resolver.getInt("progress.filesHashedInterval")) - 1;
-        outputDistribution = resolver.getBoolean("outputDistribution");
+        outputDistribution = resolver.getBoolean("output.showDistribution");
+        outputDuplicates = resolver.getBoolean("output.showDuplicates");
+        outputDifferenceFromFileReadBeforeHash = resolver.getBoolean("output.showDifferenceByFileReadBeforeHash");
+        fileReadBeforeHashMinSizeBytes = megaBytesToBytes(resolver.getDouble("fileReadBeforeHash.minFileSizeMb"));
+        fileReadBeforeHashNumberOfBytes = resolver.getInt("fileReadBeforeHash.numberOfBytes");
     }
 
     private Properties createDefaultProperties() throws IOException {
@@ -116,11 +127,27 @@ public class FileDupeFinderConfiguration {
         return outputDistribution;
     }
 
+    public boolean isDuplicatesOutputEnabled() {
+        return outputDuplicates;
+    }
+
+    public boolean isDifferenceFromFileReadBeforeHashOutputEnabled() {
+        return outputDifferenceFromFileReadBeforeHash;
+    }
+
+    public long getFileReadBeforeHashMinSizeBytes() {
+        return fileReadBeforeHashMinSizeBytes;
+    }
+
+    public int getFileReadBeforeHashNumberOfBytes() {
+        return fileReadBeforeHashNumberOfBytes;
+    }
+
 
     private static final class PropertiesResolver {
 
-        private Properties defaultProperties;
-        private Properties userProperties;
+        private final Properties defaultProperties;
+        private final Properties userProperties;
 
         PropertiesResolver(Properties defaultProperties, Properties userProperties) {
             this.defaultProperties = defaultProperties;

@@ -24,6 +24,7 @@ public class FileDuplicateFinderRunner {
 
     private final FileDupeFinderConfiguration configuration;
     private final FileHasherFactory fileHasherFactory;
+    private final long start = System.currentTimeMillis();
 
     private FileDuplicateFinderRunner(FileDupeFinderConfiguration configuration,
                                       FileHasherFactory fileHasherFactory) {
@@ -57,11 +58,10 @@ public class FileDuplicateFinderRunner {
         PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
         List<DuplicateEntry> duplicates = findDuplicates(path, fileHasher, pathMatcher);
+        System.out.println();
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
-        } else {
-            System.out.println();
-            System.out.println("Found " + duplicates.size() + " duplicates");
+        } else if (configuration.isDuplicatesOutputEnabled()) {
             duplicates.forEach(entry -> {
                 String files = entry.getPaths().stream()
                     .map(Path::toString)
@@ -69,7 +69,10 @@ public class FileDuplicateFinderRunner {
                     .collect(Collectors.joining(", "));
                 System.out.println(entry.getHash() + ": " + files);
             });
+            System.out.println("Total: " + duplicates.size() + " duplicates");
         }
+
+        System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
     }
 
     private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, PathMatcher pathMatcher) {

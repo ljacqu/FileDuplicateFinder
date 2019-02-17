@@ -3,10 +3,17 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.io.MoreFiles;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +31,7 @@ public class FileDuplicateFinder {
 
     private final Map<Long, FileEntry> filesBySize = new HashMap<>();
     private int count;
+    private int hashingSaveCount;
 
     public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, PathMatcher pathMatcher,
                                FileDupeFinderConfiguration configuration) {
@@ -60,11 +68,15 @@ public class FileDuplicateFinder {
     public List<DuplicateEntry> filterFilesForDuplicates() {
         System.out.println();
         System.out.print("Hashing files");
-        return filesBySize.entrySet().stream()
+        List<DuplicateEntry> duplicateEntries = filesBySize.entrySet().stream()
             .filter(entry -> entry.getValue().getPaths().size() > 1)
             .flatMap(hashEntriesInFileSizeAndReturnDuplicates())
             .sorted(createDuplicateEntryComparator())
             .collect(Collectors.toList());
+        if (configuration.isDifferenceFromFileReadBeforeHashOutputEnabled()) {
+            System.out.println("Skipped hashing " + hashingSaveCount + " files from reading bytes before hashing");
+        }
+        return duplicateEntries;
     }
 
     public Map<Integer, Integer> getSizeDistribution() {
@@ -87,7 +99,7 @@ public class FileDuplicateFinder {
                 }
             };
 
-            return entry.getValue().hashFilesAndReturnDuplicates(fileHasher, entry.getKey(), progressUpdater);
+            return hashFilesAndReturnDuplicates(entry.getKey(), entry.getValue(), progressUpdater);
         };
     }
 
@@ -96,5 +108,71 @@ public class FileDuplicateFinder {
 
         return comparatorByNumberOfFilesAsc.reversed()
             .thenComparing(Comparator.comparing(DuplicateEntry::getSize).reversed());
+    }
+
+    public Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, FileEntry fileEntry,
+                                                               Runnable progressUpdater) {
+        Multimap<String, Path> pathsByHash = HashMultimap.create(fileEntry.getPaths().size(), 2);
+        for (Path path : getPathsToHash(fileEntry.getPaths(), fileSize)) {
+            try {
+                pathsByHash.put(fileHasher.calculateHash(path, fileSize), path);
+                progressUpdater.run();
+            } catch (IOException e) {
+                throw new UncheckedIOException(path.toAbsolutePath().toString(), e);
+            }
+        }
+
+        return pathsByHash.asMap().entrySet().stream()
+            .filter(e -> e.getValue().size() > 1)
+            .map(e -> new DuplicateEntry(fileSize, e.getKey(), e.getValue()));
+    }
+
+    private List<Path> getPathsToHash(List<Path> paths, long filesize) {
+        if (filesize >= configuration.getFileReadBeforeHashMinSizeBytes()) {
+            Multimap<WrappedByteArray, Path> files = HashMultimap.create(paths.size(), 2);
+            for (Path path : paths) {
+                byte[] bytes = new byte[configuration.getFileReadBeforeHashNumberOfBytes()];
+                try (InputStream is = MoreFiles.asByteSource(path).openBufferedStream()) {
+                    is.read(bytes);
+                    files.put(new WrappedByteArray(bytes), path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException("Could not read '" + path.toAbsolutePath() + "'", e);
+                }
+            }
+            List<Path> filteredPaths = files.asMap().entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .flatMap(e -> e.getValue().stream())
+                .collect(Collectors.toList());
+            if (configuration.isDifferenceFromFileReadBeforeHashOutputEnabled()) {
+                System.out.print(paths.size() + " -> " + filteredPaths.size() + " ");
+                hashingSaveCount += paths.size() - filteredPaths.size();
+            }
+            return filteredPaths;
+        } else {
+            return paths;
+        }
+    }
+
+    private static class WrappedByteArray {
+        private final byte[] value;
+
+        WrappedByteArray(byte[] value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object == this) {
+                return true;
+            } else if (object instanceof WrappedByteArray) {
+                return Arrays.equals(value, ((WrappedByteArray) object).value);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(value);
+        }
     }
 }
