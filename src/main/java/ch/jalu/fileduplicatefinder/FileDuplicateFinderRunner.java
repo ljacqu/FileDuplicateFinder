@@ -1,6 +1,8 @@
 package ch.jalu.fileduplicatefinder;
 
 import ch.jalu.fileduplicatefinder.config.ConfigurationReader;
+import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
+import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
@@ -11,10 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -56,23 +55,27 @@ public class FileDuplicateFinderRunner {
 
         PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configurationReader);
 
-        Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path, fileHasher, pathMatcher);
+        List<DuplicateEntry> duplicates = processPath(path, fileHasher, pathMatcher);
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
         } else {
-            duplicates.stream()
-                .sorted(Comparator.comparingInt(e -> e.getValue().size()))
-                .forEach(entry -> {
-                    String files = entry.getValue().stream().sorted().collect(Collectors.joining(", "));
-                    System.out.println(entry.getKey() + ": " + files);
-                });
+            duplicates.forEach(entry -> {
+                String files = entry.getPaths().stream()
+                    .map(Path::toString)
+                    .sorted()
+                    .collect(Collectors.joining(", "));
+                System.out.println(entry.getHash() + ": " + files);
+            });
         }
     }
 
-    private static Set<Map.Entry<String, Collection<String>>> processPath(Path path, FileHasher fileHasher,
-                                                                          PathMatcher pathMatcher) throws IOException {
+    private static List<DuplicateEntry> processPath(Path path, FileHasher fileHasher,
+                                                    PathMatcher pathMatcher) throws IOException {
         FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher);
         fileDuplicateFinder.processFiles();
+        fileDuplicateFinder.getSizeDistribution().forEach((k, v) -> {
+            System.out.println(v + " groups with " + k + " entry");
+        });
         return fileDuplicateFinder.returnDuplicates();
     }
 }
