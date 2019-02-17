@@ -52,8 +52,7 @@ public class FileDuplicateFinderRunner {
             "Path '" + path.toAbsolutePath() + "' is not a directory");
 
         String hashAlgorithm = configuration.getHashAlgorithm();
-        FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm,
-            configuration.getMaxSizeForHashingInMb());
+        FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
 
         PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 

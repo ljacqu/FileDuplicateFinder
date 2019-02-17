@@ -15,7 +15,7 @@ public class FileDupeFinderConfiguration {
 
     private String rootFolder;
     private String hashAlgorithm;
-    private double maxSizeForHashingInMb;
+    private long maxSizeForHashingInBytes;
     private int progressFilesFoundInterval;
     private int progressFilesHashedInterval;
 
@@ -50,7 +50,7 @@ public class FileDupeFinderConfiguration {
 
         rootFolder = resolver.getString("rootFolder");
         hashAlgorithm = resolver.getString("hashAlgorithm");
-        maxSizeForHashingInMb = resolver.getDouble("maxSizeForHashingInMb");
+        maxSizeForHashingInBytes = megaBytesToBytes(resolver.getDouble("maxSizeForHashingInMb"));
         filterWhitelist = resolver.getString("filter.whitelist");
         filterBlacklist = resolver.getString("filter.blacklist");
         filterMinSizeInMb = resolver.getDoubleOrNull("filter.fileSizeMinInMb");
@@ -91,8 +91,8 @@ public class FileDupeFinderConfiguration {
         return rootFolder;
     }
 
-    public double getMaxSizeForHashingInMb() {
-        return maxSizeForHashingInMb;
+    public long getMaxSizeForHashingInBytes() {
+        return maxSizeForHashingInBytes;
     }
 
     public String getHashAlgorithm() {

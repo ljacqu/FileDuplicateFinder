@@ -105,17 +105,20 @@ public class FileDuplicateFinder {
 
     private static Comparator<DuplicateEntry> createDuplicateEntryComparator() {
         Comparator<DuplicateEntry> comparatorByNumberOfFilesAsc = Comparator.comparing(e -> e.getPaths().size());
-
-        return comparatorByNumberOfFilesAsc.reversed()
-            .thenComparing(Comparator.comparing(DuplicateEntry::getSize).reversed());
+        return Comparator.comparing(DuplicateEntry::getSize).reversed()
+            .thenComparing(comparatorByNumberOfFilesAsc.reversed());
     }
 
     public Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, FileEntry fileEntry,
                                                                Runnable progressUpdater) {
+        if (fileSize >= configuration.getMaxSizeForHashingInBytes()) {
+            return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, fileEntry.getPaths()));
+        }
+
         Multimap<String, Path> pathsByHash = HashMultimap.create(fileEntry.getPaths().size(), 2);
         for (Path path : getPathsToHash(fileEntry.getPaths(), fileSize)) {
             try {
-                pathsByHash.put(fileHasher.calculateHash(path, fileSize), path);
+                pathsByHash.put(fileHasher.calculateHash(path), path);
                 progressUpdater.run();
             } catch (IOException e) {
                 throw new UncheckedIOException(path.toAbsolutePath().toString(), e);
