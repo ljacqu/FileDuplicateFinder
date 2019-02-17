@@ -5,6 +5,6 @@ import java.nio.file.Path;
 
 public interface FileHasher {
 
-    String calculateHash(Path path) throws IOException;
+    String calculateHash(Path path, long fileSize) throws IOException;
 
 }

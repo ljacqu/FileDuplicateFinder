@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.filefilter;
 
-import ch.jalu.fileduplicatefinder.config.ConfigurationReader;
+import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
 import java.nio.file.FileSystems;
@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 
+import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 
 public class ConfigurableFilePathMatcher implements PathMatcher {
@@ -17,11 +18,11 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
     private final PathMatcher fileSizeMinFilter;
     private final PathMatcher fileSizeMaxFilter;
 
-    public ConfigurableFilePathMatcher(ConfigurationReader configurationReader) {
-        this.whitelist = toWildcardPattern(configurationReader.getFilterWhitelist());
-        this.blacklist = negatePathMatcher(toWildcardPattern(configurationReader.getFilterBlacklist()));
-        this.fileSizeMinFilter = toSizeFilter(configurationReader.getFilterMinSizeInMb(), 1);
-        this.fileSizeMaxFilter = toSizeFilter(configurationReader.getFilterMaxSizeInMb(), -1);
+    public ConfigurableFilePathMatcher(FileDupeFinderConfiguration fileDupeFinderConfiguration) {
+        this.whitelist = toWildcardPattern(fileDupeFinderConfiguration.getFilterWhitelist());
+        this.blacklist = negatePathMatcher(toWildcardPattern(fileDupeFinderConfiguration.getFilterBlacklist()));
+        this.fileSizeMinFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMinSizeInMb(), true);
+        this.fileSizeMaxFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMaxSizeInMb(), false);
     }
 
     private static PathMatcher toWildcardPattern(String filter) {
@@ -35,15 +36,17 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
         }
     }
 
-    private static PathMatcher toSizeFilter(Double sizeInMb, int requiredCompareToValue) {
+    private static PathMatcher toSizeFilter(Double sizeInMb, boolean isMin) {
         if (sizeInMb == null) {
             return null;
         }
-        return path -> {
-            Double fileSize = PathUtils.getFileSizeInMegaBytes(path);
-            int sizeComparedToThreshold = fileSize.compareTo(sizeInMb);
-            return sizeComparedToThreshold == 0 || sizeComparedToThreshold == requiredCompareToValue;
-        };
+
+        long sizeThreshold = megaBytesToBytes(sizeInMb);
+        if (isMin) {
+            return path -> PathUtils.size(path) >= sizeThreshold;
+        } else {
+            return path -> PathUtils.size(path) <= sizeThreshold;
+        }
     }
 
     @Override

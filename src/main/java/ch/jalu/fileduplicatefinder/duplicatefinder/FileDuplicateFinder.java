@@ -1,8 +1,9 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
+import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
+import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -10,57 +11,59 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FileDuplicateFinder {
 
     private final Path rootFolder;
     private final FileHasher fileHasher;
     private final PathMatcher pathMatcher;
+    private final FileDupeFinderConfiguration configuration;
+
     private final Map<Long, FileEntry> filesBySize = new HashMap<>();
     private int count;
 
-    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, PathMatcher pathMatcher) {
+    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, PathMatcher pathMatcher,
+                               FileDupeFinderConfiguration configuration) {
         this.rootFolder = rootFolder;
         this.fileHasher = fileHasher;
         this.pathMatcher = pathMatcher;
+        this.configuration = configuration;
     }
 
-    public void processFiles() throws IOException {
+    public void processFiles() {
         processPath(rootFolder);
-        System.out.println("Finished after processing " + count + " files");
+        System.out.println("Found total " + count + " files");
     }
 
-    private void processPath(Path path) throws IOException {
+    private void processPath(Path path) {
         if (pathMatcher.matches(path)) {
             if (Files.isDirectory(path)) {
-                for (Path child : Files.list(path).collect(Collectors.toList())) {
-                    processPath(child);
-                }
-            } else {
-                long fileSize = Files.size(path);
+                PathUtils.list(path).forEach(this::processPath);
+            } else if (Files.isRegularFile(path)) {
+                long fileSize = PathUtils.size(path);
                 FileEntry fileEntry = filesBySize.get(fileSize);
                 if (fileEntry == null) {
                     filesBySize.put(fileSize, new FileEntry(path));
                 } else {
                     fileEntry.getPaths().add(path);
                 }
-                if ((++count & 511) == 0) {
-                    System.out.println("Processed " + count + " files");
+                if ((++count & configuration.getProgressFilesFoundInterval()) == 0) {
+                    System.out.println("Found " + count + " files");
                 }
             }
         }
     }
 
-    public List<DuplicateEntry> returnDuplicates() {
-        return filesBySize.values().stream()
-            .filter(value -> value.getPaths().size() > 1)
-            .peek(value -> value.initPathsByHash(fileHasher))
-            .map(value -> value.getPathsByHash().asMap())
-            .flatMap(map -> map.entrySet().stream())
-            .filter(entry -> entry.getValue().size() > 1)
-            .map(entry -> new DuplicateEntry(entry.getKey(), entry.getValue()))
-            .sorted(Comparator.<DuplicateEntry>comparingInt(e -> e.getPaths().size()).reversed())
+    public List<DuplicateEntry> filterFilesForDuplicates() {
+        System.out.println();
+        System.out.print("Hashing files");
+        return filesBySize.entrySet().stream()
+            .filter(entry -> entry.getValue().getPaths().size() > 1)
+            .flatMap(hashEntriesInFileSizeAndReturnDuplicates())
+            .sorted(createDuplicateEntryComparator())
             .collect(Collectors.toList());
     }
 
@@ -70,5 +73,28 @@ public class FileDuplicateFinder {
             .collect(Collectors.groupingBy(e -> e.getPaths().size()))
             .entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().size()));
+    }
+
+    private Function<Map.Entry<Long, FileEntry>, Stream<DuplicateEntry>> hashEntriesInFileSizeAndReturnDuplicates() {
+        final int[] hashedFiles = {0};
+        return entry -> {
+            Runnable progressUpdater = () -> {
+                if ((++hashedFiles[0] & configuration.getProgressFilesHashedInterval()) == 0) {
+                    System.out.println();
+                    System.out.print("Hashed " + hashedFiles[0] + " files");
+                } else if ((hashedFiles[0] & 15) == 0) {
+                    System.out.print(" . ");
+                }
+            };
+
+            return entry.getValue().hashFilesAndReturnDuplicates(fileHasher, entry.getKey(), progressUpdater);
+        };
+    }
+
+    private static Comparator<DuplicateEntry> createDuplicateEntryComparator() {
+        Comparator<DuplicateEntry> comparatorByNumberOfFilesAsc = Comparator.comparing(e -> e.getPaths().size());
+
+        return comparatorByNumberOfFilesAsc.reversed()
+            .thenComparing(Comparator.comparing(DuplicateEntry::getSize).reversed());
     }
 }

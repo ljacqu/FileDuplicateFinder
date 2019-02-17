@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder;
 
-import ch.jalu.fileduplicatefinder.config.ConfigurationReader;
+import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
@@ -8,12 +8,13 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import com.google.common.base.Preconditions;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -21,44 +22,46 @@ import java.util.stream.Collectors;
  */
 public class FileDuplicateFinderRunner {
 
-    private final ConfigurationReader configurationReader;
+    private final FileDupeFinderConfiguration configuration;
     private final FileHasherFactory fileHasherFactory;
 
-    private FileDuplicateFinderRunner(ConfigurationReader configurationReader, FileHasherFactory fileHasherFactory) {
-        this.configurationReader = configurationReader;
+    private FileDuplicateFinderRunner(FileDupeFinderConfiguration configuration,
+                                      FileHasherFactory fileHasherFactory) {
+        this.configuration = configuration;
         this.fileHasherFactory = fileHasherFactory;
     }
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) {
         Path userConfig = null;
         if (args != null && args.length > 0) {
             userConfig = Paths.get(args[0]);
         }
 
         FileDuplicateFinderRunner runner =
-            new FileDuplicateFinderRunner(new ConfigurationReader(userConfig), new FileHasherFactory());
+            new FileDuplicateFinderRunner(new FileDupeFinderConfiguration(userConfig), new FileHasherFactory());
         runner.execute();
     }
 
-    private void execute() throws IOException {
-        Path path = Paths.get(configurationReader.getRootFolder());
+    private void execute() {
+        Path path = Paths.get(configuration.getRootFolder());
         System.out.println("Processing '" + path.toAbsolutePath() + "'");
         Preconditions.checkArgument(Files.exists(path),
             "Path '" + path.toAbsolutePath() + "' does not exist");
         Preconditions.checkArgument(Files.isDirectory(path),
             "Path '" + path.toAbsolutePath() + "' is not a directory");
 
-        String hashAlgorithm = configurationReader.getHashAlgorithm();
-        System.out.println("Using hash algorithm '" + hashAlgorithm + "'");
+        String hashAlgorithm = configuration.getHashAlgorithm();
         FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm,
-            configurationReader.getMaxSizeForHashingInMb());
+            configuration.getMaxSizeForHashingInMb());
 
-        PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configurationReader);
+        PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
-        List<DuplicateEntry> duplicates = processPath(path, fileHasher, pathMatcher);
+        List<DuplicateEntry> duplicates = findDuplicates(path, fileHasher, pathMatcher);
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
         } else {
+            System.out.println();
+            System.out.println("Found " + duplicates.size() + " duplicates");
             duplicates.forEach(entry -> {
                 String files = entry.getPaths().stream()
                     .map(Path::toString)
@@ -69,13 +72,14 @@ public class FileDuplicateFinderRunner {
         }
     }
 
-    private static List<DuplicateEntry> processPath(Path path, FileHasher fileHasher,
-                                                    PathMatcher pathMatcher) throws IOException {
-        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher);
+    private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, PathMatcher pathMatcher) {
+        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher, configuration);
         fileDuplicateFinder.processFiles();
-        fileDuplicateFinder.getSizeDistribution().forEach((k, v) -> {
-            System.out.println(v + " groups with " + k + " entry");
-        });
-        return fileDuplicateFinder.returnDuplicates();
+        if (configuration.isDistributionOutputEnabled()) {
+            fileDuplicateFinder.getSizeDistribution().entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .forEach(e -> System.out.println(e.getValue() + " file size entries with " + e.getKey() + " files"));
+        }
+        return fileDuplicateFinder.filterFilesForDuplicates();
     }
 }
