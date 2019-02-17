@@ -1,11 +1,15 @@
 package ch.jalu.fileduplicatefinder;
 
 import ch.jalu.fileduplicatefinder.config.ConfigurationReader;
+import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import com.google.common.base.Preconditions;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Comparator;
@@ -40,18 +44,24 @@ public class FileDuplicateFinderRunner {
     private void execute() throws IOException {
         Path path = Paths.get(configurationReader.getRootFolder());
         System.out.println("Processing '" + path.toAbsolutePath() + "'");
+        Preconditions.checkArgument(Files.exists(path),
+            "Path '" + path.toAbsolutePath() + "' does not exist");
+        Preconditions.checkArgument(Files.isDirectory(path),
+            "Path '" + path.toAbsolutePath() + "' is not a directory");
 
         String hashAlgorithm = configurationReader.getHashAlgorithm();
         System.out.println("Using hash algorithm '" + hashAlgorithm + "'");
         FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm,
             configurationReader.getMaxSizeForHashingInMb());
 
-        Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path, fileHasher);
+        PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configurationReader);
+
+        Set<Map.Entry<String, Collection<String>>> duplicates = processPath(path, fileHasher, pathMatcher);
         if (duplicates.isEmpty()) {
             System.out.println("No duplicates found.");
         } else {
             duplicates.stream()
-                .sorted(Comparator.comparing(e -> e.getValue().size()))
+                .sorted(Comparator.comparingInt(e -> e.getValue().size()))
                 .forEach(entry -> {
                     String files = entry.getValue().stream().sorted().collect(Collectors.joining(", "));
                     System.out.println(entry.getKey() + ": " + files);
@@ -59,9 +69,9 @@ public class FileDuplicateFinderRunner {
         }
     }
 
-    private static Set<Map.Entry<String, Collection<String>>> processPath(Path path,
-                                                                          FileHasher fileHasher) throws IOException {
-        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher);
+    private static Set<Map.Entry<String, Collection<String>>> processPath(Path path, FileHasher fileHasher,
+                                                                          PathMatcher pathMatcher) throws IOException {
+        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher);
         fileDuplicateFinder.processFiles();
         return fileDuplicateFinder.returnDuplicates();
     }

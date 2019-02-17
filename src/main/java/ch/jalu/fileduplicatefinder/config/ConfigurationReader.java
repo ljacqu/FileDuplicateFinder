@@ -12,7 +12,12 @@ public class ConfigurationReader {
 
     private String rootFolder;
     private String hashAlgorithm;
-    private float maxSizeForHashingInMb;
+    private double maxSizeForHashingInMb;
+
+    private String filterWhitelist;
+    private String filterBlacklist;
+    private Double filterMinSizeInMb;
+    private Double filterMaxSizeInMb;
 
 
     public ConfigurationReader(Path propertyFile) {
@@ -31,14 +36,18 @@ public class ConfigurationReader {
 
         rootFolder = getProperty("rootFolder", userProperties, defaultProperties);
         hashAlgorithm = getProperty("hashAlgorithm", userProperties, defaultProperties);
-        maxSizeForHashingInMb = Float.valueOf(getProperty("maxSizeForHashingInMb", userProperties, defaultProperties));
+        maxSizeForHashingInMb = Double.valueOf(getProperty("maxSizeForHashingInMb", userProperties, defaultProperties));
+        filterWhitelist = getProperty("filter.whitelist", userProperties, defaultProperties);
+        filterBlacklist = getProperty("filter.blacklist", userProperties, defaultProperties);
+        filterMinSizeInMb = toDoubleNullSafe(getProperty("filter.fileSizeMinInMb", userProperties, defaultProperties));
+        filterMaxSizeInMb = toDoubleNullSafe(getProperty("filter.fileSizeMaxInMb", userProperties, defaultProperties));
     }
 
     public String getRootFolder() {
         return rootFolder;
     }
 
-    public float getMaxSizeForHashingInMb() {
+    public double getMaxSizeForHashingInMb() {
         return maxSizeForHashingInMb;
     }
 
@@ -46,7 +55,28 @@ public class ConfigurationReader {
         return hashAlgorithm;
     }
 
+    public String getFilterWhitelist() {
+        return filterWhitelist;
+    }
+
+    public String getFilterBlacklist() {
+        return filterBlacklist;
+    }
+
+    public Double getFilterMinSizeInMb() {
+        return filterMinSizeInMb;
+    }
+
+    public Double getFilterMaxSizeInMb() {
+        return filterMaxSizeInMb;
+    }
+
     private static String getProperty(String key, Properties userProperties, Properties defaultProperties) {
+        String systemProperty = System.getProperty(key);
+        if (systemProperty != null) {
+            return systemProperty;
+        }
+
         return Optional.ofNullable(userProperties)
             .map(prop -> prop.getProperty(key))
             .orElseGet(() -> defaultProperties.getProperty(key));
@@ -73,5 +103,9 @@ public class ConfigurationReader {
             properties.load(is);
         }
         return properties;
+    }
+
+    private static Double toDoubleNullSafe(String str) {
+        return str != null && !str.isEmpty() ? Double.valueOf(str) : null;
     }
 }

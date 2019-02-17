@@ -4,7 +4,7 @@ import com.google.common.hash.Hashing;
 
 public class FileHasherFactory {
 
-    public FileHasher createFileHasher(String algorithm, float maxSizeForHashingInMb) {
+    public FileHasher createFileHasher(String algorithm, double maxSizeForHashingInMb) {
         switch (algorithm.toLowerCase()) {
             case "md5": return new DefaultFileHasher(Hashing.md5(), maxSizeForHashingInMb);
             case "sha1": return new DefaultFileHasher(Hashing.sha1(), maxSizeForHashingInMb);

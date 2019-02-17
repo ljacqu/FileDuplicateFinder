@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -16,12 +17,14 @@ public class FileDuplicateFinder {
 
     private final Path rootFolder;
     private final FileHasher fileHasher;
+    private final PathMatcher pathMatcher;
 
     private final Multimap<String, String> filesByHash = HashMultimap.create();
 
-    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher) {
+    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, PathMatcher pathMatcher) {
         this.rootFolder = rootFolder;
         this.fileHasher = fileHasher;
+        this.pathMatcher = pathMatcher;
     }
 
     public void processFiles() throws IOException {
@@ -30,15 +33,17 @@ public class FileDuplicateFinder {
     }
 
     private void processPath(Path path) throws IOException {
-        if (Files.isDirectory(path)) {
-            for (Path child : Files.list(path).collect(Collectors.toList())) {
-                processPath(child);
-            }
-        } else {
-            String hash = fileHasher.calculateHash(path);
-            filesByHash.put(hash, path.toString());
-            if ((filesByHash.size() & 511) == 0) {
-                System.out.println("Processed " + filesByHash.size() + " files");
+        if (pathMatcher.matches(path)) {
+            if (Files.isDirectory(path)) {
+                for (Path child : Files.list(path).collect(Collectors.toList())) {
+                    processPath(child);
+                }
+            } else {
+                String hash = fileHasher.calculateHash(path);
+                filesByHash.put(hash, path.toString());
+                if ((filesByHash.size() & 511) == 0) {
+                    System.out.println("Processed " + filesByHash.size() + " files");
+                }
             }
         }
     }
