@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class FileDuplicateFinder {
     private final PathMatcher pathMatcher;
     private final FileDupeFinderConfiguration configuration;
 
-    private final Map<Long, FileEntry> filesBySize = new HashMap<>();
+    private final Map<Long, List<Path>> pathsBySize = new HashMap<>();
     private int count;
     private int hashingSaveCount;
 
@@ -52,12 +53,9 @@ public class FileDuplicateFinder {
                 PathUtils.list(path).forEach(this::processPath);
             } else if (Files.isRegularFile(path)) {
                 long fileSize = PathUtils.size(path);
-                FileEntry fileEntry = filesBySize.get(fileSize);
-                if (fileEntry == null) {
-                    filesBySize.put(fileSize, new FileEntry(path));
-                } else {
-                    fileEntry.getPaths().add(path);
-                }
+                List<Path> paths = pathsBySize.computeIfAbsent(fileSize, s -> new ArrayList<>(5));
+                paths.add(path);
+
                 if ((++count & configuration.getProgressFilesFoundInterval()) == 0) {
                     System.out.println("Found " + count + " files");
                 }
@@ -68,8 +66,8 @@ public class FileDuplicateFinder {
     public List<DuplicateEntry> filterFilesForDuplicates() {
         System.out.println();
         System.out.print("Hashing files");
-        List<DuplicateEntry> duplicateEntries = filesBySize.entrySet().stream()
-            .filter(entry -> entry.getValue().getPaths().size() > 1)
+        List<DuplicateEntry> duplicateEntries = pathsBySize.entrySet().stream()
+            .filter(entry -> entry.getValue().size() > 1)
             .flatMap(hashEntriesInFileSizeAndReturnDuplicates())
             .sorted(createDuplicateEntryComparator())
             .collect(Collectors.toList());
@@ -81,13 +79,13 @@ public class FileDuplicateFinder {
 
     public Map<Integer, Integer> getSizeDistribution() {
         // probably there is a better way of doing this?
-        return filesBySize.values().stream()
-            .collect(Collectors.groupingBy(e -> e.getPaths().size()))
+        return pathsBySize.values().stream()
+            .collect(Collectors.groupingBy(List::size))
             .entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().size()));
     }
 
-    private Function<Map.Entry<Long, FileEntry>, Stream<DuplicateEntry>> hashEntriesInFileSizeAndReturnDuplicates() {
+    private Function<Map.Entry<Long, List<Path>>, Stream<DuplicateEntry>> hashEntriesInFileSizeAndReturnDuplicates() {
         final int[] hashedFiles = {0};
         return entry -> {
             Runnable progressUpdater = () -> {
@@ -109,14 +107,14 @@ public class FileDuplicateFinder {
             .thenComparing(comparatorByNumberOfFilesAsc.reversed());
     }
 
-    public Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, FileEntry fileEntry,
+    public Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, List<Path> paths,
                                                                Runnable progressUpdater) {
         if (fileSize >= configuration.getMaxSizeForHashingInBytes()) {
-            return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, fileEntry.getPaths()));
+            return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, paths));
         }
 
-        Multimap<String, Path> pathsByHash = HashMultimap.create(fileEntry.getPaths().size(), 2);
-        for (Path path : getPathsToHash(fileEntry.getPaths(), fileSize)) {
+        Multimap<String, Path> pathsByHash = HashMultimap.create(paths.size(), 2);
+        for (Path path : getPathsToHash(paths, fileSize)) {
             try {
                 pathsByHash.put(fileHasher.calculateHash(path), path);
                 progressUpdater.run();
