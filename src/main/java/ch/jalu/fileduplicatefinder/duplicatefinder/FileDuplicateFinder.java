@@ -77,12 +77,9 @@ public class FileDuplicateFinder {
         return duplicateEntries;
     }
 
-    public Map<Integer, Integer> getSizeDistribution() {
-        // probably there is a better way of doing this?
+    public Map<Integer, Long> getSizeDistribution() {
         return pathsBySize.values().stream()
-            .collect(Collectors.groupingBy(List::size))
-            .entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().size()));
+            .collect(Collectors.groupingBy(List::size, Collectors.counting()));
     }
 
     private Function<Map.Entry<Long, List<Path>>, Stream<DuplicateEntry>> hashEntriesInFileSizeAndReturnDuplicates() {
@@ -107,8 +104,8 @@ public class FileDuplicateFinder {
             .thenComparing(comparatorByNumberOfFilesAsc.reversed());
     }
 
-    public Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, List<Path> paths,
-                                                               Runnable progressUpdater) {
+    private Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, List<Path> paths,
+                                                                Runnable progressUpdater) {
         if (fileSize >= configuration.getMaxSizeForHashingInBytes()) {
             return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, paths));
         }
