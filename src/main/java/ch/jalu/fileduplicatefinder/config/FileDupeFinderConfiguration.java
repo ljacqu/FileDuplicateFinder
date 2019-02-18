@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -13,7 +14,7 @@ import static com.google.common.math.IntMath.ceilingPowerOfTwo;
 
 public class FileDupeFinderConfiguration {
 
-    private String rootFolder;
+    private Path rootFolder;
     private String hashAlgorithm;
     private long maxSizeForHashingInBytes;
     private int progressFilesFoundInterval;
@@ -48,7 +49,7 @@ public class FileDupeFinderConfiguration {
 
         PropertiesResolver resolver = new PropertiesResolver(defaultProperties, userProperties);
 
-        rootFolder = resolver.getString("rootFolder");
+        rootFolder = Paths.get(resolver.getString("rootFolder"));
         hashAlgorithm = resolver.getString("hashAlgorithm");
         maxSizeForHashingInBytes = megaBytesToBytes(resolver.getDouble("maxSizeForHashingInMb"));
         filterWhitelist = resolver.getString("filter.whitelist");
@@ -87,7 +88,7 @@ public class FileDupeFinderConfiguration {
         return properties;
     }
 
-    public String getRootFolder() {
+    public Path getRootFolder() {
         return rootFolder;
     }
 
