@@ -2,8 +2,18 @@ package ch.jalu.fileduplicatefinder.hashing;
 
 import com.google.common.hash.Hashing;
 
+/**
+ * Creates {@link FileHasher} instances.
+ */
 public class FileHasherFactory {
 
+    /**
+     * Returns a file hasher with the given hash algorithm or throws an exception
+     * if the hash algorithm is unknown.
+     *
+     * @param algorithm the algorithm to use
+     * @return file hasher using the given algorithm
+     */
     @SuppressWarnings("deprecation")
     public FileHasher createFileHasher(String algorithm) {
         switch (algorithm.toLowerCase()) {

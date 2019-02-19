@@ -12,6 +12,9 @@ import java.util.Properties;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static com.google.common.math.IntMath.ceilingPowerOfTwo;
 
+/**
+ * Configuration for the file duplicate finder application.
+ */
 public class FileDupeFinderConfiguration {
 
     private Path rootFolder;
@@ -32,22 +35,26 @@ public class FileDupeFinderConfiguration {
     private long fileReadBeforeHashMinSizeBytes;
     private int fileReadBeforeHashNumberOfBytes;
 
-
-    public FileDupeFinderConfiguration(Path propertyFile) {
-        initialize(propertyFile);
+    /**
+     * Constructor.
+     *
+     * @param userPropertyFile configuration file provided by the user
+     */
+    public FileDupeFinderConfiguration(Path userPropertyFile) {
+        initialize(userPropertyFile);
     }
 
-    private void initialize(Path propertyFile) {
+    private void initialize(Path userPropertyFile) {
         Properties defaultProperties;
         Properties userProperties;
         try {
             defaultProperties = createDefaultProperties();
-            userProperties = createUserPropertiesOrNull(propertyFile);
+            userProperties = createUserPropertiesOrNull(userPropertyFile);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
 
-        PropertiesResolver resolver = new PropertiesResolver(defaultProperties, userProperties);
+        PropertyResolver resolver = new PropertyResolver(defaultProperties, userProperties);
 
         rootFolder = Paths.get(resolver.getString("rootFolder"));
         hashAlgorithm = resolver.getString("hashAlgorithm");
@@ -142,48 +149,5 @@ public class FileDupeFinderConfiguration {
 
     public int getFileReadBeforeHashNumberOfBytes() {
         return fileReadBeforeHashNumberOfBytes;
-    }
-
-
-    private static final class PropertiesResolver {
-
-        private final Properties defaultProperties;
-        private final Properties userProperties;
-
-        PropertiesResolver(Properties defaultProperties, Properties userProperties) {
-            this.defaultProperties = defaultProperties;
-            this.userProperties = userProperties;
-        }
-
-        String getString(String key) {
-            String systemProperty = System.getProperty(key);
-            if (systemProperty != null) {
-                return systemProperty;
-            }
-
-            return Optional.ofNullable(userProperties)
-                .map(prop -> prop.getProperty(key))
-                .orElseGet(() -> defaultProperties.getProperty(key));
-        }
-
-        int getInt(String key) {
-            String value = getString(key);
-            return Integer.parseInt(value);
-        }
-
-        double getDouble(String key) {
-            String value = getString(key);
-            return Double.parseDouble(value);
-        }
-
-        Double getDoubleOrNull(String key) {
-            String value = getString(key);
-            return (value == null || value.isEmpty()) ? null : Double.valueOf(value);
-        }
-
-        boolean getBoolean(String key) {
-            String value = getString(key);
-            return Boolean.parseBoolean(value);
-        }
     }
 }

@@ -11,6 +11,9 @@ import java.nio.file.PathMatcher;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 
+/**
+ * Path matcher configurable by {@link FileDupeFinderConfiguration} properties.
+ */
 public class ConfigurableFilePathMatcher implements PathMatcher {
 
     private final PathMatcher whitelist;
@@ -25,6 +28,12 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
         this.fileSizeMaxFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMaxSizeInMb(), false);
     }
 
+    /**
+     * Creates a path matcher for the given glob filter. Returns null if the filter is null or empty.
+     *
+     * @param filter the filter to create a path matcher for
+     * @return path matcher with the filter, or null
+     */
     private static PathMatcher toWildcardPattern(String filter) {
         if (filter == null || filter.isEmpty()) {
             return null;
@@ -36,6 +45,13 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
         }
     }
 
+    /**
+     * Creates a path matcher which matches files based on their size.
+     *
+     * @param sizeInMb the required size in megabytes
+     * @param isMin true to match files which are at least the given size, false for a matcher {@code size >= sizeInMb}
+     * @return path matcher for the given size, or null if the argument is null
+     */
     private static PathMatcher toSizeFilter(Double sizeInMb, boolean isMin) {
         if (sizeInMb == null) {
             return null;

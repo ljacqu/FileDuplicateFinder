@@ -8,10 +8,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * File hasher implementation using a {@link HashFunction} from Guava.
+ */
 public class DefaultFileHasher implements FileHasher {
 
     private final HashFunction hashFunction;
 
+    /**
+     * Constructor.
+     *
+     * @param hashFunction the hash function to use
+     */
     public DefaultFileHasher(HashFunction hashFunction) {
         this.hashFunction = hashFunction;
     }
