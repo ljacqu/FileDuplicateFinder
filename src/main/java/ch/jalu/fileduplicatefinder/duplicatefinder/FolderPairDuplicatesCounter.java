@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,8 +14,6 @@ import java.util.stream.Collectors;
  */
 public class FolderPairDuplicatesCounter {
 
-    private Map<FolderPair, Integer[]> countByFolderPair = new HashMap<>();
-
     /**
      * Returns the number of duplicated files by folder pair.
      *
@@ -24,32 +21,29 @@ public class FolderPairDuplicatesCounter {
      * @return number of duplicated files by folder pair, ready to be output
      */
     public List<String> getFolderToFolderDuplicateCount(Collection<DuplicateEntry> duplicateEntries) {
-        duplicateEntries.stream()
+        Map<FolderPair, Long> countByFolderPair = duplicateEntries.stream()
             .map(entry -> collectionToList(entry.getPaths()))
-            .forEach(this::processAllPaths);
+            .flatMap(paths -> processAllPaths(paths).stream())
+            .collect(Collectors.groupingBy(k -> k, Collectors.counting()));
 
         return countByFolderPair.entrySet().stream()
             .sorted(comparatorByCountDesc())
-            .map(cell -> cell.getValue()[0] + ": " + cell.getKey())
+            .map(cell -> cell.getValue() + ": " + cell.getKey())
             .collect(Collectors.toList());
     }
 
-    private void processAllPaths(List<Path> paths) {
+    private List<FolderPair> processAllPaths(List<Path> paths) {
+        List<FolderPair> pairs = new ArrayList<>(paths.size() * (paths.size() - 1));
         for (int i = 0; i < paths.size(); ++i) {
             for (int j = i + 1; j < paths.size(); ++j) {
-                addCount(paths.get(i), paths.get(j));
+                pairs.add(new FolderPair(paths.get(i).getParent(), paths.get(j).getParent()));
             }
         }
+        return pairs;
     }
 
-    private void addCount(Path file1, Path file2) {
-        FolderPair folderPair = new FolderPair(file1.getParent(), file2.getParent());
-        Integer[] count = countByFolderPair.computeIfAbsent(folderPair, k -> new Integer[]{ 0 });
-        ++count[0];
-    }
-
-    private static Comparator<Map.Entry<FolderPair, Integer[]>> comparatorByCountDesc() {
-        Comparator<Map.Entry<FolderPair, Integer[]>> comparator = Comparator.comparing(entry -> entry.getValue()[0]);
+    private static Comparator<Map.Entry<FolderPair, Long>> comparatorByCountDesc() {
+        Comparator<Map.Entry<FolderPair, Long>> comparator = Comparator.comparing(Map.Entry::getValue);
         return comparator.reversed();
     }
 
