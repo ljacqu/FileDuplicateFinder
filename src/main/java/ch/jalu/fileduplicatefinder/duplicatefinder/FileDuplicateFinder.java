@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
+import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.collect.HashMultimap;
@@ -12,9 +13,9 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -27,14 +28,14 @@ public class FileDuplicateFinder {
 
     private final Path rootFolder;
     private final FileHasher fileHasher;
-    private final PathMatcher pathMatcher;
+    private final FilePathMatcher pathMatcher;
     private final FileDupeFinderConfiguration configuration;
 
     private final Map<Long, List<Path>> pathsBySize = new HashMap<>();
     private int count;
     private int hashingSaveCount;
 
-    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, PathMatcher pathMatcher,
+    public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, FilePathMatcher pathMatcher,
                                FileDupeFinderConfiguration configuration) {
         this.rootFolder = rootFolder;
         this.fileHasher = fileHasher;
@@ -48,7 +49,7 @@ public class FileDuplicateFinder {
     }
 
     private void processPath(Path path) {
-        if (pathMatcher.matches(path)) {
+        if (pathMatcher.shouldScan(path)) {
             if (Files.isDirectory(path)) {
                 PathUtils.list(path).forEach(this::processPath);
             } else if (Files.isRegularFile(path)) {
@@ -138,7 +139,7 @@ public class FileDuplicateFinder {
                 }
             }
             List<Path> filteredPaths = files.asMap().entrySet().stream()
-                .filter(e -> e.getValue().size() > 1)
+                .filter(e -> e.getValue().size() > 1 && pathMatcher.hasFileFromResultWhitelist(e.getValue()))
                 .flatMap(e -> e.getValue().stream())
                 .collect(Collectors.toList());
             if (configuration.isDifferenceFromFileReadBeforeHashOutputEnabled()) {
@@ -147,7 +148,7 @@ public class FileDuplicateFinder {
             }
             return filteredPaths;
         } else {
-            return paths;
+            return pathMatcher.hasFileFromResultWhitelist(paths) ? paths : Collections.emptyList();
         }
     }
 

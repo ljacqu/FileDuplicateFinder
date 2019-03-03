@@ -6,7 +6,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.Properties;
 
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
@@ -31,6 +30,8 @@ public class FileDupeFinderConfiguration {
     private String filterBlacklist;
     private Double filterMinSizeInMb;
     private Double filterMaxSizeInMb;
+
+    private String filterDuplicatesWhitelist;
 
     private long fileReadBeforeHashMinSizeBytes;
     private int fileReadBeforeHashNumberOfBytes;
@@ -63,6 +64,7 @@ public class FileDupeFinderConfiguration {
         filterBlacklist = resolver.getString("filter.blacklist");
         filterMinSizeInMb = resolver.getDoubleOrNull("filter.fileSizeMinInMb");
         filterMaxSizeInMb = resolver.getDoubleOrNull("filter.fileSizeMaxInMb");
+        filterDuplicatesWhitelist = resolver.getString("filter.duplicatesWhitelist");
         progressFilesFoundInterval = ceilingPowerOfTwo(resolver.getInt("progress.filesFoundInterval")) - 1;
         progressFilesHashedInterval = ceilingPowerOfTwo(resolver.getInt("progress.filesHashedInterval")) - 1;
         outputDistribution = resolver.getBoolean("output.showDistribution");
@@ -121,6 +123,10 @@ public class FileDupeFinderConfiguration {
 
     public Double getFilterMaxSizeInMb() {
         return filterMaxSizeInMb;
+    }
+
+    public String getFilterDuplicatesWhitelist() {
+        return filterDuplicatesWhitelist;
     }
 
     public int getProgressFilesFoundInterval() {

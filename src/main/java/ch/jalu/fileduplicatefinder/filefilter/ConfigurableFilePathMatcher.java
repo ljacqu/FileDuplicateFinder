@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.Collection;
 
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
@@ -14,18 +15,20 @@ import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 /**
  * Path matcher configurable by {@link FileDupeFinderConfiguration} properties.
  */
-public class ConfigurableFilePathMatcher implements PathMatcher {
+public class ConfigurableFilePathMatcher implements FilePathMatcher {
 
     private final PathMatcher whitelist;
     private final PathMatcher blacklist;
     private final PathMatcher fileSizeMinFilter;
     private final PathMatcher fileSizeMaxFilter;
+    private final PathMatcher duplicateResultWhitelist;
 
     public ConfigurableFilePathMatcher(FileDupeFinderConfiguration fileDupeFinderConfiguration) {
         this.whitelist = toWildcardPattern(fileDupeFinderConfiguration.getFilterWhitelist());
         this.blacklist = negatePathMatcher(toWildcardPattern(fileDupeFinderConfiguration.getFilterBlacklist()));
         this.fileSizeMinFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMinSizeInMb(), true);
         this.fileSizeMaxFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMaxSizeInMb(), false);
+        this.duplicateResultWhitelist = toWildcardPattern(fileDupeFinderConfiguration.getFilterDuplicatesWhitelist());
     }
 
     /**
@@ -66,7 +69,7 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
     }
 
     @Override
-    public boolean matches(Path path) {
+    public boolean shouldScan(Path path) {
         if (Files.isRegularFile(path)) {
             return matches(whitelist, path)
                 && matches(blacklist, path)
@@ -74,6 +77,11 @@ public class ConfigurableFilePathMatcher implements PathMatcher {
                 && matches(fileSizeMaxFilter, path);
         }
         return true;
+    }
+
+    @Override
+    public boolean hasFileFromResultWhitelist(Collection<Path> paths) {
+        return paths.stream().anyMatch(path -> matches(duplicateResultWhitelist, path));
     }
 
     private static boolean matches(PathMatcher matcher, Path path) {

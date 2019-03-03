@@ -33,6 +33,7 @@ class FileDupeFinderConfigurationTest {
 
         assertThat(configuration.getFilterMinSizeInMb()).isNull();
         assertThat(configuration.getFilterMaxSizeInMb()).isNull();
+        assertThat(configuration.getFilterDuplicatesWhitelist()).isNull();
 
         assertThat(configuration.getFileReadBeforeHashMinSizeBytes()).isGreaterThan(0);
         assertThat(configuration.getFileReadBeforeHashNumberOfBytes()).isGreaterThan(0);
@@ -51,6 +52,7 @@ class FileDupeFinderConfigurationTest {
         assertThat(configuration.getFilterWhitelist()).isEqualTo("whitelist");
         assertThat(configuration.getFilterMinSizeInMb()).isEqualTo(123);
         assertThat(configuration.getFilterMaxSizeInMb()).isEqualTo(234);
+        assertThat(configuration.getFilterDuplicatesWhitelist()).isEqualTo("dupes");
         assertThat(configuration.isDistributionOutputEnabled()).isTrue();
 
         // Check that files are taken over from default

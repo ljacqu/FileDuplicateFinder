@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.PathMatcher;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -76,7 +79,7 @@ class ConfigurableFilePathMatcherTest {
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
         // when
-        boolean result = pathMatcher.matches(TestUtils.getTestSamplesFolder());
+        boolean result = pathMatcher.shouldScan(TestUtils.getTestSamplesFolder());
 
         // then
         assertThat(result).isTrue();
@@ -95,9 +98,45 @@ class ConfigurableFilePathMatcherTest {
             .withCauseInstanceOf(PatternSyntaxException.class);
     }
 
-    private static Set<String> getMatchingFilesFromSampleFolder(PathMatcher pathMatcher) throws IOException {
+    @Test
+    void shouldReturnIfListContainsPathMatchingFilter() {
+        // given
+        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        given(configuration.getFilterDuplicatesWhitelist()).willReturn("*.csv");
+        List<Path> paths1 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.csv"), Paths.get("file.pdf"));
+        List<Path> paths2 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.pdf"), Paths.get("file.doc"));
+        ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
+
+        // when
+        boolean result1 = pathMatcher.hasFileFromResultWhitelist(paths1);
+        boolean result2 = pathMatcher.hasFileFromResultWhitelist(paths2);
+
+        // then
+        assertThat(result1).isTrue();
+        assertThat(result2).isFalse();
+    }
+
+    @Test
+    void shouldPassIfDuplicatesResultFilterIsNull() {
+        // given
+        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        given(configuration.getFilterDuplicatesWhitelist()).willReturn(null);
+        List<Path> paths1 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.csv"), Paths.get("file.pdf"));
+        List<Path> paths2 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.pdf"), Paths.get("file.doc"));
+        ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
+
+        // when
+        boolean result1 = pathMatcher.hasFileFromResultWhitelist(paths1);
+        boolean result2 = pathMatcher.hasFileFromResultWhitelist(paths2);
+
+        // then
+        assertThat(result1).isTrue();
+        assertThat(result2).isTrue();
+    }
+
+    private static Set<String> getMatchingFilesFromSampleFolder(FilePathMatcher pathMatcher) throws IOException {
         return Files.list(TestUtils.getTestSamplesFolder())
-            .filter(pathMatcher::matches)
+            .filter(pathMatcher::shouldScan)
             .map(path -> path.getFileName().toString())
             .collect(Collectors.toSet());
     }

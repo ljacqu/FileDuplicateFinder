@@ -4,6 +4,7 @@ import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
+import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
@@ -59,7 +60,7 @@ public class FileDuplicateFinderRunner {
         String hashAlgorithm = configuration.getHashAlgorithm();
         FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
 
-        PathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
+        FilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
         List<DuplicateEntry> duplicates = findDuplicates(path, fileHasher, pathMatcher);
         entryOutputter.outputResult(duplicates);
@@ -67,7 +68,7 @@ public class FileDuplicateFinderRunner {
         System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
     }
 
-    private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, PathMatcher pathMatcher) {
+    private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, FilePathMatcher pathMatcher) {
         FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher, configuration);
         fileDuplicateFinder.processFiles();
         if (configuration.isDistributionOutputEnabled()) {
