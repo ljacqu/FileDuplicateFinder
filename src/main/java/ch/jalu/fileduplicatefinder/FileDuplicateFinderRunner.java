@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder;
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
+import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
@@ -13,7 +14,6 @@ import com.google.common.base.Preconditions;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
@@ -27,14 +27,17 @@ public class FileDuplicateFinderRunner {
     private final FileDupeFinderConfiguration configuration;
     private final FileHasherFactory fileHasherFactory;
     private final DuplicateEntryOutputter entryOutputter;
+    private final FolderPairDuplicatesCounter folderPairDuplicatesCounter;
     private final long start = System.currentTimeMillis();
 
     private FileDuplicateFinderRunner(FileDupeFinderConfiguration configuration,
                                       FileHasherFactory fileHasherFactory,
-                                      DuplicateEntryOutputter entryOutputter) {
+                                      DuplicateEntryOutputter entryOutputter,
+                                      FolderPairDuplicatesCounter folderPairDuplicatesCounter) {
         this.configuration = configuration;
         this.fileHasherFactory = fileHasherFactory;
         this.entryOutputter = entryOutputter;
+        this.folderPairDuplicatesCounter = folderPairDuplicatesCounter;
     }
 
     public static void main(String... args) {
@@ -45,7 +48,10 @@ public class FileDuplicateFinderRunner {
 
         FileDupeFinderConfiguration configuration = new FileDupeFinderConfiguration(userConfig);
         FileDuplicateFinderRunner runner = new FileDuplicateFinderRunner(
-            configuration, new FileHasherFactory(), new ConsoleResultOutputter(configuration));
+            configuration,
+            new FileHasherFactory(),
+            new ConsoleResultOutputter(configuration),
+            new FolderPairDuplicatesCounter());
         runner.execute();
     }
 
@@ -64,6 +70,15 @@ public class FileDuplicateFinderRunner {
 
         List<DuplicateEntry> duplicates = findDuplicates(path, fileHasher, pathMatcher);
         entryOutputter.outputResult(duplicates);
+
+        if (configuration.isOutputFolderPairCount()) {
+            System.out.println();
+            System.out.println("Folder duplicates");
+
+            List<String> duplicatesByFolderPair = folderPairDuplicatesCounter
+                .getFolderToFolderDuplicateCount(duplicates);
+            duplicatesByFolderPair.forEach(System.out::println);
+        }
 
         System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
     }

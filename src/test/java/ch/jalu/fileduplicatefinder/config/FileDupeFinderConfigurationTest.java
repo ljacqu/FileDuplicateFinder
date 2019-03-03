@@ -30,10 +30,10 @@ class FileDupeFinderConfigurationTest {
 
         assertThat(configuration.isDuplicatesOutputEnabled()).isTrue();
         assertThat(configuration.isDistributionOutputEnabled()).isFalse();
+        assertThat(configuration.isOutputFolderPairCount()).isFalse();
 
         assertThat(configuration.getFilterMinSizeInMb()).isNull();
         assertThat(configuration.getFilterMaxSizeInMb()).isNull();
-        assertThat(configuration.getFilterDuplicatesWhitelist()).isNull();
 
         assertThat(configuration.getFileReadBeforeHashMinSizeBytes()).isGreaterThan(0);
         assertThat(configuration.getFileReadBeforeHashNumberOfBytes()).isGreaterThan(0);
@@ -54,6 +54,7 @@ class FileDupeFinderConfigurationTest {
         assertThat(configuration.getFilterMaxSizeInMb()).isEqualTo(234);
         assertThat(configuration.getFilterDuplicatesWhitelist()).isEqualTo("dupes");
         assertThat(configuration.isDistributionOutputEnabled()).isTrue();
+        assertThat(configuration.isOutputFolderPairCount()).isTrue();
 
         // Check that files are taken over from default
         assertThat(configuration.getHashAlgorithm()).isEqualTo("sha1");

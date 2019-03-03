@@ -25,6 +25,7 @@ public class FileDupeFinderConfiguration {
     private boolean outputDistribution;
     private boolean outputDuplicates;
     private boolean outputDifferenceFromFileReadBeforeHash;
+    private boolean outputFolderPairCount;
 
     private String filterWhitelist;
     private String filterBlacklist;
@@ -70,6 +71,7 @@ public class FileDupeFinderConfiguration {
         outputDistribution = resolver.getBoolean("output.showDistribution");
         outputDuplicates = resolver.getBoolean("output.showDuplicates");
         outputDifferenceFromFileReadBeforeHash = resolver.getBoolean("output.showDifferenceByFileReadBeforeHash");
+        outputFolderPairCount = resolver.getBoolean("output.showFolderPairCount");
         fileReadBeforeHashMinSizeBytes = megaBytesToBytes(resolver.getDouble("fileReadBeforeHash.minFileSizeMb"));
         fileReadBeforeHashNumberOfBytes = resolver.getInt("fileReadBeforeHash.numberOfBytes");
     }
@@ -147,6 +149,10 @@ public class FileDupeFinderConfiguration {
 
     public boolean isDifferenceFromFileReadBeforeHashOutputEnabled() {
         return outputDifferenceFromFileReadBeforeHash;
+    }
+
+    public boolean isOutputFolderPairCount() {
+        return outputFolderPairCount;
     }
 
     public long getFileReadBeforeHashMinSizeBytes() {
