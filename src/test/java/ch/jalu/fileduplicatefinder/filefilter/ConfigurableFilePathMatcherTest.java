@@ -37,7 +37,7 @@ class ConfigurableFilePathMatcherTest {
         // then
         Set<String> fileNames = getMatchingFilesFromSampleFolder(result);
         assertThat(fileNames).containsExactlyInAnyOrder(
-            "test_1.json", "test_2.txt", "test_3.txt", "test_4.csv", "test_5.csv", "test_6.csv");
+            "test_1.json", "test_2.txt", "test_3.txt", "test_4.csv", "test_5.csv", "test_6.csv", "test_7.xml");
     }
 
     @Test
@@ -68,7 +68,7 @@ class ConfigurableFilePathMatcherTest {
 
         // then
         Set<String> fileNames = getMatchingFilesFromSampleFolder(result);
-        assertThat(fileNames).containsExactlyInAnyOrder("test_1.json", "test_4.csv", "test_5.csv", "test_6.csv");
+        assertThat(fileNames).containsExactlyInAnyOrder("test_1.json", "test_4.csv", "test_5.csv", "test_6.csv", "test_7.xml");
     }
 
     @Test

@@ -59,7 +59,7 @@ class PathUtilsTest {
         Stream<String> fileNamesStream = result.map(p -> p.getFileName().toString());
         assertThat(fileNamesStream)
             .containsExactlyInAnyOrder("test_1.json", "test_2.txt", "test_3.txt",
-                "test_4.csv", "test_5.csv", "test_6.csv");
+                "test_4.csv", "test_5.csv", "test_6.csv", "test_7.xml");
     }
 
     @Test

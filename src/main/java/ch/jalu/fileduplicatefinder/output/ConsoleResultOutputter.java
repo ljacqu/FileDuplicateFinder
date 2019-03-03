@@ -22,16 +22,16 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
     public void outputResult(List<DuplicateEntry> duplicates) {
         System.out.println();
         if (duplicates.isEmpty()) {
-            System.out.println("No duplicates found.");
+            output("No duplicates found.");
         } else if (configuration.isDuplicatesOutputEnabled()) {
             long sum = 0;
             for (DuplicateEntry entry : duplicates) {
-                System.out.println(formatEntry(entry));
+                output(formatEntry(entry));
                 sum += entry.getSize() * (entry.getPaths().size() - 1);
             }
 
-            System.out.println("Total duplicated data: " + formatSize(sum));
-            System.out.println("Total: " + duplicates.size() + " duplicates");
+            output("Total duplicated data: " + formatSize(sum));
+            output("Total: " + duplicates.size() + " duplicates");
         }
     }
 
@@ -58,5 +58,9 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
     private static double divideWithOneDecimal(long size, double sizeFactor) {
         double sizeInUnit = size / sizeFactor;
         return Math.round(sizeInUnit * 10) / 10.0;
+    }
+
+    protected void output(String str) {
+        System.out.println(str);
     }
 }
