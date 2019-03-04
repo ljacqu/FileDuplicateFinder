@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.config;
 
 import ch.jalu.fileduplicatefinder.TestUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,6 +16,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOf
  * Test for {@link FileDupeFinderConfiguration}.
  */
 class FileDupeFinderConfigurationTest {
+
+    @AfterEach
+    void unsetProperty() {
+        System.clearProperty("filter.fileSizeMinInMb");
+        System.clearProperty("output.showDistribution");
+    }
 
     @Test
     void shouldLoadPropertiesFromDefault() {
@@ -81,5 +88,20 @@ class FileDupeFinderConfigurationTest {
         new FileDupeFinderConfiguration(configFile);
 
         // then - nothing happens
+    }
+
+    @Test
+    void shouldTakeValueFromSystemProperty() {
+        // given
+        Path configFile = TestUtils.getConfigSampleFile();
+        System.setProperty("filter.fileSizeMinInMb", "74.7");
+        System.setProperty("output.showDistribution", "true");
+
+        // when
+        FileDupeFinderConfiguration configuration = new FileDupeFinderConfiguration(configFile);
+
+        // then
+        assertThat(configuration.getFilterMinSizeInMb()).isEqualTo(74.7);
+        assertThat(configuration.isDistributionOutputEnabled()).isTrue();
     }
 }

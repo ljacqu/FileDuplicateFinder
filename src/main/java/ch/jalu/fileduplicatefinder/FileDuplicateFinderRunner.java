@@ -13,15 +13,9 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteSource;
-import com.google.common.io.MoreFiles;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,10 +34,10 @@ public class FileDuplicateFinderRunner {
     private final FolderPairDuplicatesCounter folderPairDuplicatesCounter;
     private final long start = System.currentTimeMillis();
 
-    private FileDuplicateFinderRunner(FileDupeFinderConfiguration configuration,
-                                      FileHasherFactory fileHasherFactory,
-                                      DuplicateEntryOutputter entryOutputter,
-                                      FolderPairDuplicatesCounter folderPairDuplicatesCounter) {
+    FileDuplicateFinderRunner(FileDupeFinderConfiguration configuration,
+                              FileHasherFactory fileHasherFactory,
+                              DuplicateEntryOutputter entryOutputter,
+                              FolderPairDuplicatesCounter folderPairDuplicatesCounter) {
         this.configuration = configuration;
         this.fileHasherFactory = fileHasherFactory;
         this.entryOutputter = entryOutputter;
@@ -70,7 +64,7 @@ public class FileDuplicateFinderRunner {
         runner.execute();
     }
 
-    private void execute() {
+    void execute() {
         Path path = configuration.getRootFolder();
         System.out.println("Processing '" + path.toAbsolutePath() + "'");
         Preconditions.checkArgument(Files.exists(path),
