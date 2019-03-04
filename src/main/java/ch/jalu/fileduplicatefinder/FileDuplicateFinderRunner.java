@@ -1,5 +1,6 @@
 package ch.jalu.fileduplicatefinder;
 
+import ch.jalu.fileduplicatefinder.config.ConfigFileWriter;
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
@@ -12,7 +13,15 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import com.google.common.base.Preconditions;
+import com.google.common.io.ByteSource;
+import com.google.common.io.MoreFiles;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +51,11 @@ public class FileDuplicateFinderRunner {
     }
 
     public static void main(String... args) {
+        if (System.getProperty("createConfig") != null) {
+            createConfigFile();
+            return;
+        }
+
         Path userConfig = null;
         if (args != null && args.length > 0) {
             userConfig = Paths.get(args[0]);
@@ -93,5 +107,14 @@ public class FileDuplicateFinderRunner {
                 .forEach(e -> System.out.println(e.getValue() + " file size entries with " + e.getKey() + " files"));
         }
         return fileDuplicateFinder.filterFilesForDuplicates();
+    }
+
+    private static void createConfigFile() {
+        try {
+            Path newConfigFile = new ConfigFileWriter().writeConfigFile("default.properties", "");
+            System.out.println("Created configuration file '" + newConfigFile + "'");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
