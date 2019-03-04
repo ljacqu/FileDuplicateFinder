@@ -2,9 +2,10 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -26,14 +27,19 @@ class FolderPairDuplicatesCounterTest {
             newHashSet(Paths.get("test/3.xml"), Paths.get("test/other/bar.html"), Paths.get("test/sub/baz.jpg")));
 
         // when
-        List<String> result = new FolderPairDuplicatesCounter().getFolderToFolderDuplicateCount(Arrays.asList(entry1, entry2, entry3));
+        Map<FolderPair, Long> result = new FolderPairDuplicatesCounter().getFolderToFolderDuplicateCount(Arrays.asList(entry1, entry2, entry3));
 
         // then
-        assertThat(result).hasSize(4);
-        assertThat(result.get(0)).isEqualTo("3: test - test/sub");
-        assertThat(result.get(1)).isEqualTo("2: test/other - test/sub");
-        assertThat(result.get(2)).isEqualTo("1: within test");
-        assertThat(result.get(3)).isEqualTo("1: test - test/other");
+        Path testFolder = Paths.get("test");
+        Path subFolder = Paths.get("test/sub");
+        Path otherFolder = Paths.get("test/other");
+
+        assertThat(result)
+            .hasSize(4)
+            .containsEntry(new FolderPair(testFolder, subFolder), 3L)
+            .containsEntry(new FolderPair(otherFolder, subFolder), 2L)
+            .containsEntry(new FolderPair(testFolder, testFolder), 1L)
+            .containsEntry(new FolderPair(testFolder, otherFolder), 1L);
     }
 
 }

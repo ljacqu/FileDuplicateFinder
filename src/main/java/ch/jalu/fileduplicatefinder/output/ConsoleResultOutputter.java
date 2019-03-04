@@ -2,10 +2,17 @@ package ch.jalu.fileduplicatefinder.output;
 
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
+import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Outputs results to the console.
+ */
 public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     private static final double BYTES_IN_KB = 1024;
@@ -33,6 +40,15 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
             output("Total duplicated data: " + formatSize(sum));
             output("Total: " + duplicates.size() + " duplicates");
         }
+    }
+
+    @Override
+    public void outputDirectoryPairs(Map<FolderPair, Long> totalDuplicatesByFolderPair) {
+        Path rootFolder = configuration.getRootFolder();
+        totalDuplicatesByFolderPair.entrySet().stream()
+            .sorted(Comparator.<Map.Entry<FolderPair, Long>, Long>comparing(Map.Entry::getValue).reversed())
+            .map(cell -> cell.getValue() + ": " + cell.getKey().createTextOutput(rootFolder))
+            .forEach(this::output);
     }
 
     private String formatEntry(DuplicateEntry entry) {

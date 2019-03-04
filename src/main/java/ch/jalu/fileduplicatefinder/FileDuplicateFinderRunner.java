@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder;
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateFinder;
+import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
@@ -75,9 +76,9 @@ public class FileDuplicateFinderRunner {
             System.out.println();
             System.out.println("Folder duplicates");
 
-            List<String> duplicatesByFolderPair = folderPairDuplicatesCounter
+            Map<FolderPair, Long> duplicatesByFolderPair = folderPairDuplicatesCounter
                 .getFolderToFolderDuplicateCount(duplicates);
-            duplicatesByFolderPair.forEach(System.out::println);
+            entryOutputter.outputDirectoryPairs(duplicatesByFolderPair);
         }
 
         System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");

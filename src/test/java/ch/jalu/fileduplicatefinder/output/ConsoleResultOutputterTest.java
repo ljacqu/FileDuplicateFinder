@@ -2,12 +2,15 @@ package ch.jalu.fileduplicatefinder.output;
 
 import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
+import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,6 +85,28 @@ class ConsoleResultOutputterTest {
         // then
         verify(configuration).isDuplicatesOutputEnabled();
         assertThat(resultOutputter.getLines()).isEmpty();
+    }
+
+    @Test
+    void shouldOutputDuplicatesByFolderPair() {
+        // given
+        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        given(configuration.getRootFolder()).willReturn(Paths.get("the-root"));
+        TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
+        Map<FolderPair, Long> duplicatesByPair = ImmutableMap.of(
+            new FolderPair(Paths.get("the-root/test"), Paths.get("the-root/test/first")), 2L,
+            new FolderPair(Paths.get("the-root/test"), Paths.get("the-root/test")), 8L,
+            new FolderPair(Paths.get("the-root/test/first"), Paths.get("the-root/test/second")), 10L);
+
+        // when
+        resultOutputter.outputDirectoryPairs(duplicatesByPair);
+
+        // then
+        verify(configuration).getRootFolder();
+        assertThat(resultOutputter.getLines()).containsExactly(
+            "10: test/first - test/second",
+            "8: within test",
+            "2: test - test/first");
     }
 
     private final class TestConsoleResultOutputter extends ConsoleResultOutputter {
