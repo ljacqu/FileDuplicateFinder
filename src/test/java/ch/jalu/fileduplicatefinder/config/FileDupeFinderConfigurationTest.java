@@ -76,7 +76,7 @@ class FileDupeFinderConfigurationTest {
         // when / then
         assertThatExceptionOfType(UncheckedIOException.class)
             .isThrownBy(() -> new FileDupeFinderConfiguration(configFile))
-            .withCause(new IOException("Is a directory"));
+            .withCauseInstanceOf(IOException.class);
     }
 
     @Test

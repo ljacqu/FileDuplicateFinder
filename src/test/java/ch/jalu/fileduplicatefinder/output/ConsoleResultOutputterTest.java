@@ -4,10 +4,13 @@ import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 import com.google.common.collect.ImmutableMap;
+import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +61,7 @@ class ConsoleResultOutputterTest {
         resultOutputter.outputResult(duplicates);
 
         // then
-        assertThat(resultOutputter.getLines()).containsExactly(
+        assertOutput(resultOutputter.getLines()).containsExactlyWithRightSeparator(
             "[347 B][2] hash1: foo.txt, test/test.txt",
             "[120.3 KB][3] someHash: 123/file3.pdf, dir/file2.ext, file1",
             "[381.4 MB][2] e44: abc/def/f1.png, abc/def/f2.png",
@@ -103,13 +106,17 @@ class ConsoleResultOutputterTest {
 
         // then
         verify(configuration).getRootFolder();
-        assertThat(resultOutputter.getLines()).containsExactly(
+        assertOutput(resultOutputter.getLines()).containsExactlyWithRightSeparator(
             "10: test/first - test/second",
             "8: within test",
             "2: test - test/first");
     }
 
-    private final class TestConsoleResultOutputter extends ConsoleResultOutputter {
+    private static ConsoleOutputAssertion assertOutput(List<String> actual) {
+        return new ConsoleOutputAssertion(actual);
+    }
+
+    private static final class TestConsoleResultOutputter extends ConsoleResultOutputter {
 
         private final List<String> lines = new ArrayList<>();
 
@@ -124,6 +131,24 @@ class ConsoleResultOutputterTest {
 
         List<String> getLines() {
             return lines;
+        }
+    }
+
+    private static final class ConsoleOutputAssertion extends ListAssert<String> {
+
+        ConsoleOutputAssertion(List<String> actual) {
+            super(actual);
+        }
+
+        /**
+         * Same as {@link #containsExactly(Object[])} but replaces slashes
+         * in the expected lines with {@link File#separator}.
+         */
+        ListAssert<String> containsExactlyWithRightSeparator(String... expectedLines) {
+            String[] adaptedLines = Arrays.stream(expectedLines)
+                .map(line -> line.replace("/", File.separator))
+                .toArray(String[]::new);
+            return containsExactly(adaptedLines);
         }
     }
 }
