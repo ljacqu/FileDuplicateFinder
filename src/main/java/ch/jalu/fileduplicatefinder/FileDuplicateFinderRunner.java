@@ -12,6 +12,7 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
+import ch.jalu.fileduplicatefinder.rename.FileRenamer;
 import com.google.common.base.Preconditions;
 
 import java.io.IOException;
@@ -22,6 +23,8 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * Class with main method.
@@ -47,6 +50,11 @@ public class FileDuplicateFinderRunner {
     public static void main(String... args) {
         if (System.getProperty("createConfig") != null) {
             createConfigFile();
+            return;
+        }
+
+        if (System.getProperty("rename") != null) {
+            performRenaming();
             return;
         }
 
@@ -90,6 +98,37 @@ public class FileDuplicateFinderRunner {
         }
 
         System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
+    }
+
+    static void performRenaming() {
+        Pattern renamePattern = Pattern.compile(System.getProperty("rename"));
+        String replacement = System.getProperty("to");
+
+        if (replacement == null) {
+            throw new IllegalStateException("Must provide a replacement as 'to' option: "
+                + "java -Drename=\"IMG_E(\\d)\\\\.png\" -Dto=\"IMG_\\$1E.png [-Dfolder ~/images]");
+        }
+
+        String folderProperty = System.getProperty("folder");
+        Path folder = folderProperty == null ? Paths.get(".") : Paths.get(folderProperty);
+        FileRenamer renamer = new FileRenamer(folder, renamePattern, replacement);
+
+        Map<String, String> replacements = renamer.generateRenamingsPreview();
+        if (replacements.isEmpty()) {
+            System.out.println("Nothing to rename in " + folder.toAbsolutePath());
+            return;
+        }
+        System.out.println("This will rename " + replacements.size() + " files. Preview:");
+        replacements.forEach((source, target) -> System.out.println(" " + source + " -> " + target));
+        System.out.println("Confirm [y/n]");
+
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine();
+        if ("y".equalsIgnoreCase(input)) {
+            renamer.performRenamings();
+        } else {
+            System.out.println("Canceled renaming (rename='" + renamePattern + "', to='" + replacement + "')");
+        }
     }
 
     private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, FilePathMatcher pathMatcher) {
