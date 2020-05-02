@@ -2,6 +2,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 
 public class DuplicateEntry {
 
@@ -9,7 +10,7 @@ public class DuplicateEntry {
     private final String hash;
     private final Collection<Path> paths;
 
-    public DuplicateEntry(long size, String hash, Collection<Path> paths) {
+    public DuplicateEntry(long size, String hash, List<Path> paths) {
         this.size = size;
         this.hash = hash;
         this.paths = paths;

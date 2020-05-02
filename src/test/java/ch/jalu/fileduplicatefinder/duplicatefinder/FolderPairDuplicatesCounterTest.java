@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -22,9 +21,9 @@ class FolderPairDuplicatesCounterTest {
         DuplicateEntry entry1 = new DuplicateEntry(555, "def",
             newArrayList(Paths.get("test/one.txt"), Paths.get("test/two.txt"), Paths.get("test/sub/test.txt")));
         DuplicateEntry entry2 = new DuplicateEntry(876, "abc",
-            newHashSet(Paths.get("test/sub/test.pdf"), Paths.get("test/other/foo.txt")));
+            newArrayList(Paths.get("test/sub/test.pdf"), Paths.get("test/other/foo.txt")));
         DuplicateEntry entry3 = new DuplicateEntry(123, "ghi",
-            newHashSet(Paths.get("test/3.xml"), Paths.get("test/other/bar.html"), Paths.get("test/sub/baz.jpg")));
+            newArrayList(Paths.get("test/3.xml"), Paths.get("test/other/bar.html"), Paths.get("test/sub/baz.jpg")));
 
         // when
         Map<FolderPair, Long> result = new FolderPairDuplicatesCounter().getFolderToFolderDuplicateCount(Arrays.asList(entry1, entry2, entry3));

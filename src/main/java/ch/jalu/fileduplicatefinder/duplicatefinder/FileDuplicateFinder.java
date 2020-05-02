@@ -4,8 +4,11 @@ import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.io.MoreFiles;
 
 import java.io.IOException;
@@ -111,7 +114,7 @@ public class FileDuplicateFinder {
             return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, paths));
         }
 
-        Multimap<String, Path> pathsByHash = HashMultimap.create(paths.size(), 2);
+        ListMultimap<String, Path> pathsByHash = ArrayListMultimap.create(paths.size(), 2);
         for (Path path : getPathsToHash(paths, fileSize)) {
             try {
                 pathsByHash.put(fileHasher.calculateHash(path), path);
@@ -121,7 +124,7 @@ public class FileDuplicateFinder {
             }
         }
 
-        return pathsByHash.asMap().entrySet().stream()
+        return Multimaps.asMap(pathsByHash).entrySet().stream()
             .filter(e -> e.getValue().size() > 1)
             .map(e -> new DuplicateEntry(fileSize, e.getKey(), e.getValue()));
     }
