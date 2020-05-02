@@ -13,6 +13,8 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import ch.jalu.fileduplicatefinder.rename.FileRenamer;
+import ch.jalu.fileduplicatefinder.rename.ModifiedDateFileNameRenamer;
+import ch.jalu.fileduplicatefinder.rename.RegexFileRenamer;
 import com.google.common.base.Preconditions;
 
 import java.io.IOException;
@@ -20,9 +22,11 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -101,21 +105,21 @@ public class FileDuplicateFinderRunner {
     }
 
     static void performRenaming() {
-        Pattern renamePattern = Pattern.compile(System.getProperty("rename"));
-        String replacement = System.getProperty("to");
-
-        if (replacement == null) {
-            throw new IllegalStateException("Must provide a replacement as 'to' option: "
-                + "java -Drename=\"IMG_E(\\d)\\\\.png\" -Dto=\"IMG_\\$1E.png [-Dfolder ~/images]");
+        String type = System.getProperty("type");
+        RenameType renameType;
+        if ("r".equalsIgnoreCase(type) || "regex".equalsIgnoreCase(type)) {
+            renameType = RenameType.REGEX;
+        } else if ("d".equalsIgnoreCase(type) || "date".equalsIgnoreCase(type)) {
+            renameType = RenameType.MODIFIED_DATE;
+        } else {
+            throw new IllegalStateException("Must supply type=regex or type=date");
         }
 
-        String folderProperty = System.getProperty("folder");
-        Path folder = folderProperty == null ? Paths.get(".") : Paths.get(folderProperty);
-        FileRenamer renamer = new FileRenamer(folder, renamePattern, replacement);
+        FileRenamer renamer = createRenamer(renameType);
 
         Map<String, String> replacements = renamer.generateRenamingsPreview();
         if (replacements.isEmpty()) {
-            System.out.println("Nothing to rename in " + folder.toAbsolutePath());
+            System.out.println("Nothing to rename in " + renamer.getFolder().toAbsolutePath());
             return;
         }
         System.out.println("This will rename " + replacements.size() + " files. Preview:");
@@ -127,7 +131,7 @@ public class FileDuplicateFinderRunner {
         if ("y".equalsIgnoreCase(input)) {
             renamer.performRenamings();
         } else {
-            System.out.println("Canceled renaming (rename='" + renamePattern + "', to='" + replacement + "')");
+            System.out.println("Canceled renaming");
         }
     }
 
@@ -149,5 +153,36 @@ public class FileDuplicateFinderRunner {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static FileRenamer createRenamer(RenameType renameType) {
+        String folderProperty = System.getProperty("folder");
+        Path folder = folderProperty == null ? Paths.get(".") : Paths.get(folderProperty);
+
+        if (renameType == RenameType.REGEX) {
+            Pattern renamePattern = Pattern.compile(System.getProperty("rename"));
+            String replacement = System.getProperty("to");
+            if (replacement == null) {
+                throw new IllegalStateException("Must provide a replacement as 'to' option: "
+                    + "java -Drename=\"IMG_E(\\d)\\\\.png\" -Dto=\"IMG_\\$1E.png [-Dfolder ~/images]");
+            }
+            return new RegexFileRenamer(folder, renamePattern, replacement);
+
+        } else if (renameType == RenameType.MODIFIED_DATE) {
+            String replacement = System.getProperty("to");
+            DateTimeFormatter dateFormat = Optional.ofNullable(System.getProperty("date"))
+                .map(DateTimeFormatter::ofPattern)
+                .orElse(DateTimeFormatter.ISO_LOCAL_DATE);
+            return new ModifiedDateFileNameRenamer(folder, replacement, dateFormat);
+        } else {
+            throw new IllegalStateException("Unhandled renaming type: " + renameType);
+        }
+    }
+
+    private enum RenameType {
+        REGEX,
+
+        MODIFIED_DATE
+
     }
 }
