@@ -1,7 +1,6 @@
-package ch.jalu.fileduplicatefinder;
+package ch.jalu.fileduplicatefinder.duplicatefinder;
 
-import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
-import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_ALGORITHM;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
@@ -17,24 +19,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
- * Test for {@link FileDuplicateFinderRunner}.
+ * Test for {@link FileDuplicateRunner}.
  */
-class FileDuplicateFinderRunnerTest {
+class FileDuplicateRunnerTest {
 
     @Test
     void shouldRun(@TempDir Path tempFolder) {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         FileHasherFactory fileHasherFactory = mock(FileHasherFactory.class);
         DuplicateEntryOutputter entryOutputter = mock(DuplicateEntryOutputter.class);
         FolderPairDuplicatesCounter folderDuplicatesCounter = mock(FolderPairDuplicatesCounter.class);
-        FileDuplicateFinderRunner runner = new FileDuplicateFinderRunner(configuration, fileHasherFactory, entryOutputter, folderDuplicatesCounter);
+        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter);
 
-        given(configuration.getRootFolder()).willReturn(tempFolder);
-        given(configuration.getHashAlgorithm()).willReturn("configuredHash");
+        given(configuration.getString(DUPLICATE_FOLDER)).willReturn(tempFolder.toString());
+        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(tempFolder);
+        given(configuration.getString(DUPLICATE_HASH_ALGORITHM)).willReturn("configuredHash");
 
         // when
-        runner.execute();
+        runner.run();
 
         // then
         verify(fileHasherFactory).createFileHasher("configuredHash");
@@ -45,18 +48,19 @@ class FileDuplicateFinderRunnerTest {
     @Test
     void shouldRunIncludingFolderDuplicates(@TempDir Path tempFolder) {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         FileHasherFactory fileHasherFactory = mock(FileHasherFactory.class);
         DuplicateEntryOutputter entryOutputter = mock(DuplicateEntryOutputter.class);
         FolderPairDuplicatesCounter folderDuplicatesCounter = mock(FolderPairDuplicatesCounter.class);
-        FileDuplicateFinderRunner runner = new FileDuplicateFinderRunner(configuration, fileHasherFactory, entryOutputter, folderDuplicatesCounter);
+        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter);
 
-        given(configuration.getRootFolder()).willReturn(tempFolder);
-        given(configuration.getHashAlgorithm()).willReturn("configuredHash");
-        given(configuration.isOutputFolderPairCount()).willReturn(true);
+        given(configuration.getString(DUPLICATE_FOLDER)).willReturn(tempFolder.toString());
+        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(tempFolder);
+        given(configuration.getString(DUPLICATE_HASH_ALGORITHM)).willReturn("configuredHash");
+        given(configuration.getBoolean(DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT)).willReturn(true);
 
         // when
-        runner.execute();
+        runner.run();
 
         // then
         verify(fileHasherFactory).createFileHasher("configuredHash");

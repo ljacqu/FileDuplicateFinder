@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 import com.google.common.collect.ImmutableMap;
@@ -15,11 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DUPLICATES;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 /**
  * Test for {@link ConsoleResultOutputter}.
@@ -29,7 +30,7 @@ class ConsoleResultOutputterTest {
     @Test
     void shouldHandleMissingDuplicates() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
 
         // when
@@ -42,10 +43,10 @@ class ConsoleResultOutputterTest {
     @Test
     void shouldOutputDuplicates() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         String root = "root/folder/";
-        given(configuration.getRootFolder()).willReturn(Paths.get(root));
-        given(configuration.isDuplicatesOutputEnabled()).willReturn(true);
+        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(Paths.get(root));
+        given(configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(true);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         List<DuplicateEntry> duplicates = asList(
             new DuplicateEntry(347, "hash1",
@@ -73,8 +74,8 @@ class ConsoleResultOutputterTest {
     @Test
     void shouldNotOutputDuplicates() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.isDuplicatesOutputEnabled()).willReturn(false);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(false);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         List<DuplicateEntry> duplicates = asList(
             new DuplicateEntry(347, "hash1",
@@ -86,15 +87,14 @@ class ConsoleResultOutputterTest {
         resultOutputter.outputResult(duplicates);
 
         // then
-        verify(configuration).isDuplicatesOutputEnabled();
         assertThat(resultOutputter.getLines()).isEmpty();
     }
 
     @Test
     void shouldOutputDuplicatesByFolderPair() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getRootFolder()).willReturn(Paths.get("the-root"));
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(Paths.get("the-root"));
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         Map<FolderPair, Long> duplicatesByPair = ImmutableMap.of(
             new FolderPair(Paths.get("the-root/test"), Paths.get("the-root/test/first")), 2L,
@@ -105,7 +105,6 @@ class ConsoleResultOutputterTest {
         resultOutputter.outputDirectoryPairs(duplicatesByPair);
 
         // then
-        verify(configuration).getRootFolder();
         assertOutput(resultOutputter.getLines()).containsExactlyWithRightSeparator(
             "10: test/first - test/second",
             "8: within test",
@@ -120,7 +119,7 @@ class ConsoleResultOutputterTest {
 
         private final List<String> lines = new ArrayList<>();
 
-        public TestConsoleResultOutputter(FileDupeFinderConfiguration configuration) {
+        public TestConsoleResultOutputter(FileUtilConfiguration configuration) {
             super(configuration);
         }
 

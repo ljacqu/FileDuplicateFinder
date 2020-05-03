@@ -1,14 +1,16 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DUPLICATES;
 
 /**
  * Outputs results to the console.
@@ -19,9 +21,9 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
     private static final double BYTES_IN_MB = 1024 * BYTES_IN_KB;
     private static final double BYTES_IN_GB = 1024 * BYTES_IN_MB;
 
-    private final FileDupeFinderConfiguration configuration;
+    private final FileUtilConfiguration configuration;
 
-    public ConsoleResultOutputter(FileDupeFinderConfiguration configuration) {
+    public ConsoleResultOutputter(FileUtilConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -30,7 +32,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
         System.out.println();
         if (duplicates.isEmpty()) {
             output("No duplicates found.");
-        } else if (configuration.isDuplicatesOutputEnabled()) {
+        } else if (configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)) {
             long sum = 0;
             for (DuplicateEntry entry : duplicates) {
                 output(formatEntry(entry));
@@ -44,16 +46,16 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     @Override
     public void outputDirectoryPairs(Map<FolderPair, Long> totalDuplicatesByFolderPair) {
-        Path rootFolder = configuration.getRootFolder();
+        Path rootFolder = configuration.getPath(DUPLICATE_FOLDER);
         totalDuplicatesByFolderPair.entrySet().stream()
-            .sorted(Comparator.<Map.Entry<FolderPair, Long>, Long>comparing(Map.Entry::getValue).reversed())
+            .sorted(Map.Entry.<FolderPair, Long>comparingByValue().reversed())
             .map(cell -> cell.getValue() + ": " + cell.getKey().createTextOutput(rootFolder))
             .forEach(this::output);
     }
 
     private String formatEntry(DuplicateEntry entry) {
         String files = entry.getPaths().stream()
-            .map(path -> configuration.getRootFolder().relativize(path).toString())
+            .map(path -> configuration.getPath(DUPLICATE_FOLDER).relativize(path).toString())
             .sorted()
             .collect(Collectors.joining(", "));
         String size = formatSize(entry.getSize());

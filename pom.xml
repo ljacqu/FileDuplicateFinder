@@ -45,7 +45,7 @@
                     <archive>
                         <index>true</index>
                         <manifest>
-                            <mainClass>ch.jalu.fileduplicatefinder.FileDuplicateFinderRunner</mainClass>
+                            <mainClass>ch.jalu.fileduplicatefinder.FileUtilsRunner</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

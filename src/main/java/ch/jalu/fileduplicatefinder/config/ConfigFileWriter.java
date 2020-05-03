@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.config;
 
-import ch.jalu.fileduplicatefinder.FileDuplicateFinderRunner;
+import ch.jalu.fileduplicatefinder.FileUtilsRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ public class ConfigFileWriter {
             throw new IOException("Cannot create '" + config + "' as it already exists");
         }
 
-        try (InputStream is = FileDuplicateFinderRunner.class.getClassLoader().getResourceAsStream(propertiesFile)) {
+        try (InputStream is = FileUtilsRunner.class.getClassLoader().getResourceAsStream(propertiesFile)) {
             Files.copy(is, config);
         }
         return config;

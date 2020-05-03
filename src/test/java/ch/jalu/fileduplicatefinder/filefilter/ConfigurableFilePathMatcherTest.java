@@ -1,7 +1,8 @@
 package ch.jalu.fileduplicatefinder.filefilter;
 
 import ch.jalu.fileduplicatefinder.TestUtils;
-import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilProperties;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -27,9 +28,9 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldMatchAllFilesByDefault() throws IOException {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterMinSizeInMb()).willReturn(null);
-        given(configuration.getFilterMaxSizeInMb()).willReturn(null);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getDoubleOrNull(FileUtilProperties.DUPLICATE_FILTER_MIN_SIZE)).willReturn(null);
+        given(configuration.getDoubleOrNull(FileUtilProperties.DUPLICATE_FILTER_MAX_SIZE)).willReturn(null);
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -43,9 +44,9 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldFilterByWhitelistAndMaxSize() throws IOException {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterWhitelist()).willReturn("**/*.csv");
-        given(configuration.getFilterMaxSizeInMb()).willReturn(0.001);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_WHITELIST)).willReturn("**/*.csv");
+        given(configuration.getDoubleOrNull(FileUtilProperties.DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.001);
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -58,10 +59,10 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldFilterByMinSizeAndBlacklist() throws IOException {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterMinSizeInMb()).willReturn(0.00001);
-        given(configuration.getFilterMaxSizeInMb()).willReturn(null);
-        given(configuration.getFilterBlacklist()).willReturn("**/test*.txt");
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getDoubleOrNull(FileUtilProperties.DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.00001);
+        given(configuration.getDoubleOrNull(FileUtilProperties.DUPLICATE_FILTER_MAX_SIZE)).willReturn(null);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_BLACKLIST)).willReturn("**/test*.txt");
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -74,8 +75,8 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldNotFilterFolders() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterWhitelist()).willReturn("whitelistThatWillNotMatchAnything");
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_WHITELIST)).willReturn("whitelistThatWillNotMatchAnything");
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
         // when
@@ -88,8 +89,8 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldThrowForInvalidGlobSyntax() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterBlacklist()).willReturn("[!]");
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_BLACKLIST)).willReturn("[!]");
 
         // when / then
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -101,8 +102,8 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldReturnIfListContainsPathMatchingFilter() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterDuplicatesWhitelist()).willReturn("*.csv");
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("*.csv");
         List<Path> paths1 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.csv"), Paths.get("file.pdf"));
         List<Path> paths2 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.pdf"), Paths.get("file.doc"));
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
@@ -119,8 +120,8 @@ class ConfigurableFilePathMatcherTest {
     @Test
     void shouldPassIfDuplicatesResultFilterIsNull() {
         // given
-        FileDupeFinderConfiguration configuration = mock(FileDupeFinderConfiguration.class);
-        given(configuration.getFilterDuplicatesWhitelist()).willReturn(null);
+        FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
+        given(configuration.getString(FileUtilProperties.DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn(null);
         List<Path> paths1 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.csv"), Paths.get("file.pdf"));
         List<Path> paths2 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.pdf"), Paths.get("file.doc"));
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);

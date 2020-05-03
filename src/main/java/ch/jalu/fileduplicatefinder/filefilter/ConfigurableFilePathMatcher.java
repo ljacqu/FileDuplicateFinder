@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.filefilter;
 
-import ch.jalu.fileduplicatefinder.config.FileDupeFinderConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
 import java.nio.file.FileSystems;
@@ -9,11 +9,16 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.Collection;
 
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_BLACKLIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_MAX_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_RESULT_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_WHITELIST;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 
 /**
- * Path matcher configurable by {@link FileDupeFinderConfiguration} properties.
+ * Path matcher configurable by {@link FileUtilConfiguration} properties.
  */
 public class ConfigurableFilePathMatcher implements FilePathMatcher {
 
@@ -23,12 +28,12 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
     private final PathMatcher fileSizeMaxFilter;
     private final PathMatcher duplicateResultWhitelist;
 
-    public ConfigurableFilePathMatcher(FileDupeFinderConfiguration fileDupeFinderConfiguration) {
-        this.whitelist = toWildcardPattern(fileDupeFinderConfiguration.getFilterWhitelist());
-        this.blacklist = negatePathMatcher(toWildcardPattern(fileDupeFinderConfiguration.getFilterBlacklist()));
-        this.fileSizeMinFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMinSizeInMb(), true);
-        this.fileSizeMaxFilter = toSizeFilter(fileDupeFinderConfiguration.getFilterMaxSizeInMb(), false);
-        this.duplicateResultWhitelist = toWildcardPattern(fileDupeFinderConfiguration.getFilterDuplicatesWhitelist());
+    public ConfigurableFilePathMatcher(FileUtilConfiguration configuration) {
+        this.whitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_WHITELIST));
+        this.blacklist = negatePathMatcher(toWildcardPattern(configuration.getString(DUPLICATE_FILTER_BLACKLIST)));
+        this.fileSizeMinFilter = toSizeFilter(configuration.getDoubleOrNull(DUPLICATE_FILTER_MIN_SIZE), true);
+        this.fileSizeMaxFilter = toSizeFilter(configuration.getDoubleOrNull(DUPLICATE_FILTER_MAX_SIZE), false);
+        this.duplicateResultWhitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST));
     }
 
     /**
