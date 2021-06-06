@@ -60,8 +60,8 @@ public class FileUtilsRunner {
         Path userConfig = null;
         if (args != null && args.length > 0) {
             userConfig = Paths.get(args[0]);
-            if (Files.exists(userConfig)) {
-                System.err.println("Supplied config file '" + userConfig.getFileName().toString() + "' does not exist");
+            if (!Files.exists(userConfig)) {
+                System.err.println("Supplied config file '" + userConfig.toString() + "' does not exist");
                 System.err.println("You can create a config file with java -jar fileutils.jar -Dtask="
                     + CreateConfigTask.ID);
                 throw new StopFileUtilExecutionException();
