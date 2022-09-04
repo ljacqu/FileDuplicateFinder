@@ -2,6 +2,8 @@ package ch.jalu.fileduplicatefinder.hashing;
 
 import com.google.common.hash.Hashing;
 
+import java.util.Locale;
+
 /**
  * Creates {@link FileHasher} instances.
  */
@@ -16,7 +18,7 @@ public class FileHasherFactory {
      */
     @SuppressWarnings("deprecation")
     public FileHasher createFileHasher(String algorithm) {
-        switch (algorithm.toLowerCase()) {
+        switch (algorithm.toLowerCase(Locale.ROOT)) {
             case "md5": return new DefaultFileHasher(Hashing.md5());
             case "sha1": return new DefaultFileHasher(Hashing.sha1());
             case "sha256": return new DefaultFileHasher(Hashing.sha256());

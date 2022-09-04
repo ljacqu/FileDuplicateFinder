@@ -50,6 +50,13 @@ public final class FileUtilProperties {
 
     public static final String DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL = "duplicates.output.progress.filesHashedInterval";
 
+    // --- Duplicate finder feature ---
+
+    public static final String FILE_COUNT_FOLDER = "fileCount.folder";
+
+    // Groups extensions, e.g. "image jpg,png; text txt,html,md; word doc,docx"
+    public static final String FILE_COUNT_GROUPS = "fileCount.groups";
+
 
     private FileUtilProperties() {
     }
