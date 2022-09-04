@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Test for {@link FileDuplicateRunner}.
@@ -42,7 +42,7 @@ class FileDuplicateRunnerTest {
         // then
         verify(fileHasherFactory).createFileHasher("configuredHash");
         verify(entryOutputter).outputResult(anyList());
-        verifyZeroInteractions(folderDuplicatesCounter);
+        verifyNoInteractions(folderDuplicatesCounter);
     }
 
     @Test
