@@ -33,7 +33,7 @@ import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OU
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
-import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
+import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.megaBytesToBytes;
 
 public class FileDuplicateFinder {
 

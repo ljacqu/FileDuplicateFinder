@@ -12,19 +12,7 @@ import java.util.stream.Stream;
  */
 public final class PathUtils {
 
-    private static final int BYTES_IN_ONE_MEGA_BYTE = 1024 * 1024;
-
     private PathUtils() {
-    }
-
-    /**
-     * Converts the given amount in megabytes to bytes.
-     *
-     * @param megaBytes the megabytes to convert
-     * @return the bytes
-     */
-    public static long megaBytesToBytes(double megaBytes) {
-        return Math.round(megaBytes * BYTES_IN_ONE_MEGA_BYTE);
     }
 
     /**

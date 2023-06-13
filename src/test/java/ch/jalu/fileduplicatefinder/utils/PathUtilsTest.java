@@ -23,15 +23,6 @@ class PathUtilsTest {
     private static Path folder = getTestSamplesFolder();
 
     @Test
-    void shouldConvertNumberInBytesToMegaBytes() {
-        // given / when / then
-        assertThat(PathUtils.megaBytesToBytes(3)).isEqualTo(3145728);
-        assertThat(PathUtils.megaBytesToBytes(1.002)).isEqualTo(1050673);
-        assertThat(PathUtils.megaBytesToBytes(0)).isEqualTo(0);
-        assertThat(PathUtils.megaBytesToBytes(2.45)).isEqualTo(2569011);
-    }
-
-    @Test
     void shouldNegatePathMatcher() {
         // given
         PathMatcher pathMatcher1 = Objects::nonNull;

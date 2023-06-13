@@ -4,6 +4,8 @@ public final class FileUtilProperties {
 
     public static final String TASK = "task";
 
+    public static final String FORMAT_FILE_SIZE = "core.formatFileSize";
+
     // --- Rename feature ---
 
     public static final String RENAME_FOLDER = "rename.folder";

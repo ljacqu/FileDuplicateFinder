@@ -4,9 +4,7 @@ import ch.jalu.fileduplicatefinder.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,9 +24,9 @@ import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OU
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.TASK;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
-import static org.mockito.Mockito.mock;
 
 /**
  * Test for {@link FileUtilConfiguration}.
@@ -44,8 +42,7 @@ class FileUtilConfigurationTest {
     @Test
     void shouldLoadPropertiesFromDefault() {
         // given
-        InputStream in = new ByteArrayInputStream("should\nnever\nbe\nused".getBytes());
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
 
         // when
         FileUtilConfiguration configuration = new FileUtilConfiguration(scanner, null);
@@ -71,8 +68,7 @@ class FileUtilConfigurationTest {
     @Test
     void shouldLoadPropertiesFromDefaultAndUserConfig() {
         // given
-        InputStream in = new ByteArrayInputStream("should\nnever\nbe\nused".getBytes());
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
         Path configFile = TestUtils.getConfigSampleFile();
 
         // when
@@ -95,8 +91,7 @@ class FileUtilConfigurationTest {
     @Test
     void shouldWrapIoExceptionWhenReadingUserProperty() {
         // given
-        InputStream in = new ByteArrayInputStream("should\nnever\nbe\nused".getBytes());
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
         Path configFile = TestUtils.getTestSamplesFolder();
 
         // when / then
@@ -108,8 +103,7 @@ class FileUtilConfigurationTest {
     @Test
     void shouldIgnoreUserConfigIfItDoesNotExist() {
         // given
-        InputStream in = new ByteArrayInputStream("should\nnever\nbe\nused".getBytes());
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
         Path configFile = Paths.get("bogus");
 
         // when
@@ -121,8 +115,7 @@ class FileUtilConfigurationTest {
     @Test
     void shouldTakeValueFromSystemProperty() {
         // given
-        InputStream in = new ByteArrayInputStream("should\nnever\nbe\nused".getBytes());
-        Scanner scanner = new Scanner(in);
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
         Path configFile = TestUtils.getConfigSampleFile();
         System.setProperty("duplicates.filter.minSizeInMb", "74.7");
         System.setProperty("duplicates.output.showDistribution", "true");
@@ -133,5 +126,20 @@ class FileUtilConfigurationTest {
         // then
         assertThat(configuration.getDouble(DUPLICATE_FILTER_MIN_SIZE)).isEqualTo(74.7);
         assertThat(configuration.getBoolean(DUPLICATE_OUTPUT_DISTRIBUTION)).isTrue();
+    }
+
+    @Test
+    void shouldReturnEmptyOptionalForMissingProperties() {
+        // given
+        Scanner scanner = new Scanner("should\nnever\nbe\nused");
+        Path configFile = TestUtils.getConfigSampleFile();
+        System.setProperty("duplicates.output.showDistribution", "true");
+
+        // when
+        FileUtilConfiguration configuration = new FileUtilConfiguration(scanner, configFile);
+
+        // then
+        assertThat(configuration.getStringOptional(TASK)).isEmpty();
+        assertThat(configuration.getBooleanOptional(DUPLICATE_OUTPUT_DISTRIBUTION)).hasValue(true);
     }
 }

@@ -14,7 +14,7 @@ import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FI
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_MIN_SIZE;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_RESULT_WHITELIST;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_WHITELIST;
-import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
+import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 
 /**

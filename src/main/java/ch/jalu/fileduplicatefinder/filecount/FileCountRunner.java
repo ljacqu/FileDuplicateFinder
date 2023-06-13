@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.filecount;
 
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilProperties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_FOLDER;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_GROUPS;
+import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 
@@ -33,7 +35,7 @@ public class FileCountRunner {
         Path folder = getFolderFromProperties();
         Map<String, FileGroupStatistics> statsByExtension = new FileCounter(folder).gatherExtensionCount();
         applyConfiguredGroups(statsByExtension);
-        System.out.println("Got " + statsByExtension.size() + " entries");
+        System.out.println("Found " + statsByExtension.size() + " different file extensions");
 
         String command = "help";
         while (true) {
@@ -57,7 +59,7 @@ public class FileCountRunner {
     }
 
     private void applyConfiguredGroups(Map<String, FileGroupStatistics> statsByExtension) {
-        String groupProperty = properties.getString(FILE_COUNT_GROUPS);
+        String groupProperty = properties.getStringOptional(FILE_COUNT_GROUPS).orElse("");
         if (groupProperty.isEmpty()) {
             return;
         }
@@ -125,12 +127,15 @@ public class FileCountRunner {
         if (cmdParts.length >= 3 && "desc".equals(cmdParts[2])) {
             comparator = comparator.reversed();
         }
+        boolean formatFileSize = properties.getBooleanOptional(FileUtilProperties.FORMAT_FILE_SIZE).orElse(false);
 
         stats.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(comparator))
             .forEach(entry -> {
-                System.out.println(entry.getKey() + ": " + entry.getValue().getCount()
-                    + " (" + entry.getValue().getTotalFileSize() + ")");
+                String fileSize = formatFileSize
+                    ? formatToHumanReadableSize(entry.getValue().getTotalFileSize().longValue())
+                    : String.valueOf(entry.getValue().getTotalFileSize());
+                System.out.println(entry.getKey() + ": " + entry.getValue().getCount() + " (" + fileSize + ")");
             });
     }
 

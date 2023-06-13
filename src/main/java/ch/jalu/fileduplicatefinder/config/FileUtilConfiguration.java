@@ -34,26 +34,30 @@ public class FileUtilConfiguration {
     }
 
     public String getString(String key) {
-        if (valuesFromScanner.containsKey(key)) {
-            return valuesFromScanner.get(key);
-        }
-
-        String systemProperty = System.getProperty(key);
-        if (systemProperty != null) {
-            return systemProperty;
-        }
-
-        String valueFromProperties = Optional.ofNullable(userProperties)
-            .map(prop -> prop.getProperty(key))
-            .orElseGet(() -> defaultProperties.getProperty(key));
-        if (valueFromProperties != null) {
-            return valueFromProperties;
+        Optional<String> stringFromPrimarySources = getStringOptional(key);
+        if (stringFromPrimarySources.isPresent()) {
+            return stringFromPrimarySources.get();
         }
 
         System.out.println("Provide value for '" + key + "':");
         String valueFromScanner = scanner.nextLine();
         valuesFromScanner.put(key, valueFromScanner);
         return valueFromScanner;
+    }
+
+    public Optional<String> getStringOptional(String key) {
+        if (valuesFromScanner.containsKey(key)) {
+            return Optional.of(valuesFromScanner.get(key));
+        }
+
+        String systemProperty = System.getProperty(key);
+        if (systemProperty != null) {
+            return Optional.of(systemProperty);
+        }
+
+        return Optional.ofNullable(userProperties)
+            .map(prop -> prop.getProperty(key))
+            .or(() -> Optional.ofNullable(defaultProperties.getProperty(key)));
     }
 
     public int getInt(String key) {
@@ -79,6 +83,11 @@ public class FileUtilConfiguration {
     public boolean getBoolean(String key) {
         String value = getString(key);
         return Boolean.parseBoolean(value);
+    }
+
+    public Optional<Boolean> getBooleanOptional(String key) {
+        return getStringOptional(key)
+            .map(Boolean::parseBoolean);
     }
 
     public Path getPath(String key) {
