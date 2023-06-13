@@ -46,7 +46,12 @@ public class FileUtilsRunner {
                     new FileCountRunner(scanner, configuration).run();
                     break;
                 default:
-                    System.err.println("Unknown task: '" + task + "'"); // TODO create help task
+                    String taskList = CreateConfigTask.ID
+                        + ", " + FileRenameRunner.ID_REGEX
+                        + ", " + FileRenameRunner.ID_DATE
+                        + ", " + FileDuplicateRunner.ID
+                        + ", " + FileCountRunner.ID;
+                    System.err.println("Unknown task '" + task + "'. Possible tasks: " + taskList);
             }
 
 
