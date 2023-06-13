@@ -17,14 +17,21 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Consumer;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FILES_PROCESSED_INTERVAL;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_ALGORITHM;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_MAX_SIZE_MB;
 
+/**
+ * Compares all files (recursively) of two given folders and returns the differences it finds: new or deleted files,
+ * modified files as well as moved files.
+ * <p>
+ * Files that have the exact same contents but a different file name will be considered as renamed, files with the
+ * same name but different contents are considered modified. This tool does not otherwise associate files with each
+ * other, i.e. if a file was renamed and slightly modified, one file will be listed as deleted and the other file
+ * will be listed as newly created.
+ */
 public class FolderDiffAnalyzer {
 
     private final Path folder1;
@@ -34,7 +41,6 @@ public class FolderDiffAnalyzer {
 
     // Configs
     private long maxSizeBytesForHashing;
-    private long progressIncrements;
     private boolean checkSizeAndModificationDate;
 
 
@@ -48,28 +54,31 @@ public class FolderDiffAnalyzer {
         this.fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
     }
 
-    public List<FileDifference> collectDifferences(Consumer<Long> fileProgressLogger) {
+    public List<FileDifference> collectDifferences(FolderDiffProgressCallback progressCallback) {
         Preconditions.checkArgument(Files.isDirectory(folder1),
             "Path '" + folder1.toAbsolutePath() + "' is not a directory");
         Preconditions.checkArgument(Files.isDirectory(folder2),
             "Path '" + folder2.toAbsolutePath() + "' is not a directory");
 
         maxSizeBytesForHashing = FileSizeUtils.megaBytesToBytes(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB));
-        progressIncrements = configuration.getPowerOfTwoMinusOne(DIFF_FILES_PROCESSED_INTERVAL);
         checkSizeAndModificationDate = configuration.getBoolean(DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE);
 
+        int progressIncrements = configuration.getPowerOfTwoMinusOne(DIFF_FILES_PROCESSED_INTERVAL);
+        ProgressHandler progressHandler = new ProgressHandler(progressCallback, progressIncrements);
+        progressCallback.startScan();
         LinkedHashMap<String, FileElement> folder1ElementsByRelPath = new LinkedHashMap<>();
-        LongAdder progressCounter = new LongAdder();
-        process(folder1, folder1, folder1ElementsByRelPath, progressCounter, fileProgressLogger);
+        process(folder1, folder1, folder1ElementsByRelPath, progressHandler);
 
         LinkedHashMap<String, FileElement> folder2ElementsByRelPath = new LinkedHashMap<>();
-        process(folder2, folder2, folder2ElementsByRelPath, progressCounter, fileProgressLogger);
+        process(folder2, folder2, folder2ElementsByRelPath, progressHandler);
 
-        return findDifferences(folder1ElementsByRelPath, folder2ElementsByRelPath);
+        progressCallback.startAnalysis();
+        return findDifferences(folder1ElementsByRelPath, folder2ElementsByRelPath, progressHandler);
     }
 
     private List<FileDifference> findDifferences(LinkedHashMap<String, FileElement> folder1ElementsByRelPath,
-                                                 LinkedHashMap<String, FileElement> folder2ElementsByRelPath) {
+                                                 LinkedHashMap<String, FileElement> folder2ElementsByRelPath,
+                                                 ProgressHandler progressHandler) {
         List<FileDifference> differences = new ArrayList<>();
 
         Map<String, List<FileElement>> unmatchedF1ElementsByHash = new LinkedHashMap<>();
@@ -81,6 +90,7 @@ public class FolderDiffAnalyzer {
             } else if (!filesMatchByConfiguredProperties(f1Elem, f2Elem)) {
                 differences.add(new FileDifference(f1Elem, f2Elem));
             }
+            progressHandler.incrementAnalyzedFiles();
         });
 
         Map<String, List<FileElement>> unmatchedF2ElementsByHash = new LinkedHashMap<>();
@@ -89,6 +99,7 @@ public class FolderDiffAnalyzer {
                 String f2Hash = createHashOrSizeString(f2Elem);
                 unmatchedF2ElementsByHash.computeIfAbsent(f2Hash, k -> new ArrayList<>()).add(f2Elem);
             }
+            progressHandler.incrementAnalyzedFiles();
         });
 
         unmatchedF1ElementsByHash.forEach((f1Hash, f1Elems) -> {
@@ -124,18 +135,14 @@ public class FolderDiffAnalyzer {
     }
 
     private void process(Path root, Path folder, Map<String, FileElement> elemsByRelativePath,
-                         LongAdder progressCounter, Consumer<Long> progressOutputer) {
+                         ProgressHandler progressHandler) {
         PathUtils.list(folder).forEach(element -> {
             if (Files.isRegularFile(element)) {
                 FileElement fileElement = new FileElement(root, element);
                 elemsByRelativePath.put(fileElement.getName(), fileElement);
-
-                progressCounter.add(1L);
-                if ((progressCounter.longValue() & progressIncrements) == progressIncrements) {
-                    progressOutputer.accept(progressCounter.longValue());
-                }
+                progressHandler.incrementScannedFiles();
             } else if (Files.isDirectory(element)) {
-                process(root, element, elemsByRelativePath, progressCounter, progressOutputer);
+                process(root, element, elemsByRelativePath, progressHandler);
             }
         });
     }
@@ -150,6 +157,37 @@ public class FolderDiffAnalyzer {
             return fileHasher.calculateHash(file);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to hash contents of file '" + file.toAbsolutePath() + "'", e);
+        }
+    }
+
+    private static final class ProgressHandler {
+
+        private final FolderDiffProgressCallback folderDiffProgressCallback;
+        private final int notificationStep;
+        private int scanProgress;
+        private int analysisProgress;
+
+        /**
+         * Constructor.
+         *
+         * @param folderDiffProgressCallback progress callback to use
+         * @param notificationStep steps (power of 2 minus one) in which the callback should be notified
+         */
+        ProgressHandler(FolderDiffProgressCallback folderDiffProgressCallback, int notificationStep) {
+            this.folderDiffProgressCallback = folderDiffProgressCallback;
+            this.notificationStep = notificationStep;
+        }
+
+        void incrementScannedFiles() {
+            if ((++scanProgress & notificationStep) == notificationStep) {
+                folderDiffProgressCallback.notifyScanProgress(scanProgress);
+            }
+        }
+
+        void incrementAnalyzedFiles() {
+            if ((++analysisProgress & notificationStep) == notificationStep) {
+                folderDiffProgressCallback.notifyAnalysisProgress(analysisProgress);
+            }
         }
     }
 }

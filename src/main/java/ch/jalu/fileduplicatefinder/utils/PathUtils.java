@@ -59,6 +59,12 @@ public final class PathUtils {
         }
     }
 
+    /**
+     * Returns the last modified time of the given path.
+     *
+     * @param path the path to get the last modified time of
+     * @return last modified time
+     */
     public static FileTime getLastModifiedTime(Path path) {
         try {
             return Files.getLastModifiedTime(path);
@@ -67,6 +73,12 @@ public final class PathUtils {
         }
     }
 
+    /**
+     * Returns the String representation of the given path, or null if the argument is null.
+     *
+     * @param path the path to toString (if not null)
+     * @return string of the path, or null
+     */
     @Nullable
     public static String toStringNullSafe(@Nullable Path path) {
         return path == null ? null : path.toString();

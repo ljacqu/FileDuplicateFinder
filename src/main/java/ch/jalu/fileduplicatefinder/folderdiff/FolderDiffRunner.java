@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder.folderdiff;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
+import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FOLDER1;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FOLDER2;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_USE_SMART_FOLDER_PREFIXES;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class FolderDiffRunner {
 
@@ -33,10 +35,10 @@ public class FolderDiffRunner {
         Path folder1 = configuration.getPath(DIFF_FOLDER1);
         Path folder2 = configuration.getPath(DIFF_FOLDER2);
 
-        System.out.println("Processing files");
         List<FileDifference> differences = new FolderDiffAnalyzer(folder1, folder2, configuration, fileHasherFactory)
-            .collectDifferences(this::outputProgress);
+            .collectDifferences(new ProgressUpdater());
 
+        System.out.println();
         System.out.println();
         outputDifferences(folder1, folder2, differences);
     }
@@ -70,6 +72,11 @@ public class FolderDiffRunner {
             });
     }
 
+    /**
+     * Outputs a total row with a summary of the differences that were found.
+     *
+     * @param differences the differences to analyze
+     */
     private void outputTotal(List<FileDifference> differences) {
         Map<String, Integer> countByType = new HashMap<>();
         int total = 0;
@@ -102,11 +109,17 @@ public class FolderDiffRunner {
         }
     }
 
-    private void outputProgress(long files) {
-        System.out.print(". ");
-    }
-
-    private String[] getPrefixesForFolders(Path folder1, Path folder2) {
+    /**
+     * Returns an array with two elements that should be used as textual representation of the two folders that
+     * were chosen. This method attempts to find the most relevant path elements of the folders that differ from each
+     * other. If nothing can be found, "folder1" and "folder2" are returned.
+     *
+     * @param folder1 the folder that was diffed
+     * @param folder2 second folder the first folder was diffed with
+     * @return array with two elements for the two folders
+     */
+    @VisibleForTesting
+    String[] getPrefixesForFolders(Path folder1, Path folder2) {
         String separator = File.separator;
         String folder1Name = folder1.getFileName().toString();
         String folder2Name = folder2.getFileName().toString();
@@ -133,8 +146,36 @@ public class FolderDiffRunner {
     private String getParentName(Path path) {
         Path parent = path.getParent();
         if (parent != null) {
-            return parent.getFileName().toString();
+            Path parentFileName = parent.getFileName(); // null for Windows drives, e.g. for Paths.get("C:/")
+            return firstNonNull(parentFileName, parent).toString();
         }
         return null;
+    }
+
+    /**
+     * Logs the progress of the folder diff to the console.
+     */
+    private static final class ProgressUpdater implements FolderDiffProgressCallback {
+
+        @Override
+        public void startScan() {
+            System.out.print("Scanning files:  ");
+        }
+
+        @Override
+        public void notifyScanProgress(int numberOfFoundFiles) {
+            System.out.print(". ");
+        }
+
+        @Override
+        public void startAnalysis() {
+            System.out.println();
+            System.out.print("Comparing files: ");
+        }
+
+        @Override
+        public void notifyAnalysisProgress(int numberOfHandledFiles) {
+            System.out.print(". ");
+        }
     }
 }
