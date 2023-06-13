@@ -9,6 +9,7 @@ import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.rename.FileRenameRunner;
 
+import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,8 +28,11 @@ public class FileUtilsRunner {
     public static void main(String... args) {
         try (Scanner scanner = new Scanner(System.in)) {
             FileUtilConfiguration configuration = createConfiguration(scanner, args);
-            String task = configuration.getString(TASK);
+            if (configuration == null) {
+                return;
+            }
 
+            String task = configuration.getString(TASK);
             switch (task) {
                 case CreateConfigTask.ID:
                     new CreateConfigTask().run();
@@ -53,10 +57,6 @@ public class FileUtilsRunner {
                         + ", " + FileCountRunner.ID;
                     System.err.println("Unknown task '" + task + "'. Possible tasks: " + taskList);
             }
-
-
-        } catch (StopFileUtilExecutionException e) {
-            // ignore
         }
     }
 
@@ -65,15 +65,16 @@ public class FileUtilsRunner {
             new ConsoleResultOutputter(configuration));
     }
 
+    @Nullable
     private static FileUtilConfiguration createConfiguration(Scanner scanner, String... args) {
         Path userConfig = null;
         if (args != null && args.length > 0) {
             userConfig = Paths.get(args[0]);
-            if (Files.exists(userConfig)) {
+            if (!Files.exists(userConfig)) {
                 System.err.println("Supplied config file '" + userConfig.getFileName().toString() + "' does not exist");
                 System.err.println("You can create a config file with java -jar fileutils.jar -Dtask="
                     + CreateConfigTask.ID);
-                throw new StopFileUtilExecutionException();
+                return null;
             }
         }
         return new FileUtilConfiguration(scanner, userConfig);

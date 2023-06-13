@@ -1,5 +1,6 @@
 package ch.jalu.fileduplicatefinder.config;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -18,10 +19,11 @@ public class FileUtilConfiguration {
 
     private final Scanner scanner;
     private final Properties defaultProperties;
+    @Nullable
     private final Properties userProperties;
     private final Map<String, String> valuesFromScanner = new HashMap<>();
 
-    public FileUtilConfiguration(Scanner scanner, Path userPropertyFile) {
+    public FileUtilConfiguration(Scanner scanner, @Nullable Path userPropertyFile) {
         this.scanner = scanner;
         try {
             defaultProperties = createDefaultProperties();
@@ -93,7 +95,8 @@ public class FileUtilConfiguration {
         return properties;
     }
 
-    private Properties createUserPropertiesOrNull(Path configFile) throws IOException {
+    @Nullable
+    private Properties createUserPropertiesOrNull(@Nullable Path configFile) throws IOException {
         if (configFile == null) {
             return null;
         } else if (!Files.exists(configFile)) {
