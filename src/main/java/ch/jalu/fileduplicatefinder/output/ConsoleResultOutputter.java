@@ -11,15 +11,12 @@ import java.util.stream.Collectors;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DUPLICATES;
+import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 
 /**
  * Outputs results to the console.
  */
 public class ConsoleResultOutputter implements DuplicateEntryOutputter {
-
-    private static final double BYTES_IN_KB = 1024;
-    private static final double BYTES_IN_MB = 1024 * BYTES_IN_KB;
-    private static final double BYTES_IN_GB = 1024 * BYTES_IN_MB;
 
     private final FileUtilConfiguration configuration;
 
@@ -39,7 +36,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
                 sum += entry.getSize() * (entry.getPaths().size() - 1);
             }
 
-            output("Total duplicated data: " + formatSize(sum));
+            output("Total duplicated data: " + formatToHumanReadableSize(sum));
             output("Total: " + duplicates.size() + " duplicates");
         }
     }
@@ -58,24 +55,8 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
             .map(path -> configuration.getPath(DUPLICATE_FOLDER).relativize(path).toString())
             .sorted()
             .collect(Collectors.joining(", "));
-        String size = formatSize(entry.getSize());
+        String size = formatToHumanReadableSize(entry.getSize());
         return String.format("[%s][%d] %s: %s", size, entry.getPaths().size(), entry.getHash(), files);
-    }
-
-    private String formatSize(long sizeInBytes) {
-        if (sizeInBytes >= BYTES_IN_GB) {
-            return divideWithOneDecimal(sizeInBytes, BYTES_IN_GB) + " GB";
-        } else if (sizeInBytes >= BYTES_IN_MB) {
-            return divideWithOneDecimal(sizeInBytes, BYTES_IN_MB) + " MB";
-        } else if (sizeInBytes >= BYTES_IN_KB) {
-            return divideWithOneDecimal(sizeInBytes, BYTES_IN_KB) + " KB";
-        }
-        return sizeInBytes + " B";
-    }
-
-    private static double divideWithOneDecimal(long size, double sizeFactor) {
-        double sizeInUnit = size / sizeFactor;
-        return Math.round(sizeInUnit * 10) / 10.0;
     }
 
     protected void output(String str) {
