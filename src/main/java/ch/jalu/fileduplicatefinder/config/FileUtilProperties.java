@@ -54,7 +54,7 @@ public final class FileUtilProperties {
 
     public static final String FILE_COUNT_FOLDER = "fileCount.folder";
 
-    // Groups extensions, e.g. "image jpg,png; text txt,html,md; word doc,docx"
+    // Groups extensions, e.g. "image .jpg,.png; text .txt,.html,.md; word .doc,.docx"
     public static final String FILE_COUNT_GROUPS = "fileCount.groups";
 
 

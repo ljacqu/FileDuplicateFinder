@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_FOLDER;
 import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_GROUPS;
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 
 public class FileCountRunner {
 
@@ -74,10 +76,10 @@ public class FileCountRunner {
     private void handleGroupCommand(String group, Map<String, FileGroupStatistics> statsByExtension) {
         String[] commandParts = group.split(" ");
         if (commandParts.length != 3) {
-            System.err.println("Invalid group command! Expected something like 'group image jpg,jpeg,png'");
+            System.err.println("Invalid group command! Expected something like 'group image .jpg,.jpeg,.png'");
             return;
         }
-        String groupName = commandParts[1].toLowerCase(Locale.ROOT);
+        String groupName = LOWER_CAMEL.to(UPPER_CAMEL, commandParts[1]);
 
         FileGroupStatistics stats = statsByExtension.get(groupName);
         if (stats == null) {
@@ -85,7 +87,7 @@ public class FileCountRunner {
         }
 
         for (String extension : commandParts[2].split(",")) {
-            FileGroupStatistics extensionStats = statsByExtension.remove(extension.trim().toUpperCase(Locale.ROOT));
+            FileGroupStatistics extensionStats = statsByExtension.remove(extension.trim().toLowerCase(Locale.ROOT));
             if (extensionStats != null) {
                 stats.add(extensionStats);
             }
@@ -106,20 +108,20 @@ public class FileCountRunner {
             return;
         }
 
-        Function<FileGroupStatistics, Comparable<?>> propertyComparer;
+        Function<FileGroupStatistics, Comparable<?>> propertyToCompareGetter;
         switch (cmdParts[1]) {
             case "size":
-                propertyComparer = FileGroupStatistics::getTotalFileSize;
+                propertyToCompareGetter = FileGroupStatistics::getTotalFileSize;
                 break;
             case "count":
-                propertyComparer = FileGroupStatistics::getCount;
+                propertyToCompareGetter = FileGroupStatistics::getCount;
                 break;
             default:
                 System.err.println("Unknown sort property. Use size or count");
                 return;
         }
 
-        Comparator<FileGroupStatistics> comparator = Comparator.comparing((Function) propertyComparer);
+        Comparator<FileGroupStatistics> comparator = Comparator.comparing((Function) propertyToCompareGetter);
         if (cmdParts.length >= 3 && "desc".equals(cmdParts[2])) {
             comparator = comparator.reversed();
         }
@@ -135,8 +137,8 @@ public class FileCountRunner {
     private void outputHelp() {
         System.out.println("- exit to stop");
         System.out.println("- group to group extensions together: group <groupName> <extensionList>, e.g.:");
-        System.out.println("  * group images jpg,jpeg,png");
-        System.out.println("  * group text txt,html,md");
+        System.out.println("  * group images .jpg,.jpeg,.png");
+        System.out.println("  * group text .txt,.html,.md");
         System.out.println("- sort to output results: sort <size/count> [desc], e.g.");
         System.out.println("  * sort size");
         System.out.println("  * sort count desc");

@@ -47,6 +47,6 @@ public class FileCounter {
         if (lastDotIndex == -1) {
             return "File";
         }
-        return filename.substring(lastDotIndex + 1).toUpperCase(Locale.ROOT);
+        return "." + filename.substring(lastDotIndex + 1).toLowerCase(Locale.ROOT);
     }
 }
