@@ -5,6 +5,7 @@ import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateRunner;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
 import ch.jalu.fileduplicatefinder.filecount.FileCountRunner;
+import ch.jalu.fileduplicatefinder.folderdiff.FolderDiffRunner;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.rename.FileRenameRunner;
@@ -49,12 +50,16 @@ public class FileUtilsRunner {
                 case FileCountRunner.ID:
                     new FileCountRunner(scanner, configuration).run();
                     break;
+                case FolderDiffRunner.ID:
+                    new FolderDiffRunner(configuration, new FileHasherFactory()).run();
+                    break;
                 default:
                     String taskList = CreateConfigTask.ID
                         + ", " + FileRenameRunner.ID_REGEX
                         + ", " + FileRenameRunner.ID_DATE
                         + ", " + FileDuplicateRunner.ID
-                        + ", " + FileCountRunner.ID;
+                        + ", " + FileCountRunner.ID
+                        + ", " + FolderDiffRunner.ID;
                     System.err.println("Unknown task '" + task + "'. Possible tasks: " + taskList);
             }
         }

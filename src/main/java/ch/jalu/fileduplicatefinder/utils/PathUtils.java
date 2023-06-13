@@ -1,10 +1,12 @@
 package ch.jalu.fileduplicatefinder.utils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.attribute.FileTime;
 import java.util.stream.Stream;
 
 /**
@@ -55,5 +57,18 @@ public final class PathUtils {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to get size of '" + path.toAbsolutePath() + "'", e);
         }
+    }
+
+    public static FileTime getLastModifiedTime(Path path) {
+        try {
+            return Files.getLastModifiedTime(path);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to get last modified time of '" + path.toAbsolutePath() + "'", e);
+        }
+    }
+
+    @Nullable
+    public static String toStringNullSafe(@Nullable Path path) {
+        return path == null ? null : path.toString();
     }
 }

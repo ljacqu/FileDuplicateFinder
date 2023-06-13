@@ -59,6 +59,18 @@ public final class FileUtilProperties {
     // Groups extensions, e.g. "image .jpg,.png; text .txt,.html,.md; word .doc,.docx"
     public static final String FILE_COUNT_GROUPS = "fileCount.groups";
 
+    // --- Folder diff feature ---
+
+    public static final String DIFF_FOLDER1 = "diff.folder1";
+
+    public static final String DIFF_FOLDER2 = "diff.folder2";
+
+    public static final String DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE = "diff.checkBySizeAndModificationDate";
+
+    public static final String DIFF_USE_SMART_FOLDER_PREFIXES = "diff.output.smartFolderPrefixes";
+
+    public static final String DIFF_FILES_PROCESSED_INTERVAL = "diff.output.progress.filesProcessedInterval";
+
 
     private FileUtilProperties() {
     }
