@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
@@ -27,12 +27,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_MAX_SIZE_MB;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.megaBytesToBytes;
 
 public class FileDuplicateFinder {
@@ -124,7 +124,8 @@ public class FileDuplicateFinder {
 
     private Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, List<Path> paths,
                                                                 Runnable progressUpdater) {
-        if (fileSize >= megaBytesToBytes(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB))) {
+        double maxSizeMegabytes = configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB);
+        if (maxSizeMegabytes > 0 && fileSize >= megaBytesToBytes(maxSizeMegabytes)) {
             return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, paths));
         }
 

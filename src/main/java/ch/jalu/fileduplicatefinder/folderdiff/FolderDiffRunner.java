@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.folderdiff;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.annotations.VisibleForTesting;
@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FOLDER1;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FOLDER2;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_USE_SMART_FOLDER_PREFIXES;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DIFF_FOLDER1;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DIFF_FOLDER2;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DIFF_USE_SMART_FOLDER_PREFIXES;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class FolderDiffRunner {
@@ -32,8 +32,8 @@ public class FolderDiffRunner {
     }
 
     public void run() {
-        Path folder1 = configuration.getPath(DIFF_FOLDER1);
-        Path folder2 = configuration.getPath(DIFF_FOLDER2);
+        Path folder1 = configuration.getPathOrPrompt(DIFF_FOLDER1);
+        Path folder2 = configuration.getPathOrPrompt(DIFF_FOLDER2);
 
         List<FileDifference> differences = new FolderDiffAnalyzer(folder1, folder2, configuration, fileHasherFactory)
             .collectDifferences(new ProgressUpdater());

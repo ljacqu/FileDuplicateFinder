@@ -1,7 +1,7 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import ch.jalu.fileduplicatefinder.TestUtils;
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import com.google.common.io.MoreFiles;
@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_MAX_SIZE_MB;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;

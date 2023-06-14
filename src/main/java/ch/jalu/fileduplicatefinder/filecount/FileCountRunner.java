@@ -1,10 +1,8 @@
 package ch.jalu.fileduplicatefinder.filecount;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.config.FileUtilProperties;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
@@ -12,8 +10,9 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_FOLDER;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.FILE_COUNT_GROUPS;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FILE_COUNT_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FILE_COUNT_GROUPS;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FORMAT_FILE_SIZE;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
@@ -24,11 +23,11 @@ public class FileCountRunner {
 
     private final Scanner scanner;
 
-    private final FileUtilConfiguration properties;
+    private final FileUtilConfiguration configuration;
 
-    public FileCountRunner(Scanner scanner, FileUtilConfiguration properties) {
+    public FileCountRunner(Scanner scanner, FileUtilConfiguration configuration) {
         this.scanner = scanner;
-        this.properties = properties;
+        this.configuration = configuration;
     }
 
     public void run() {
@@ -54,12 +53,11 @@ public class FileCountRunner {
     }
 
     private Path getFolderFromProperties() {
-        String folderProperty = properties.getString(FILE_COUNT_FOLDER);
-        return folderProperty == null ? Paths.get(".") : Paths.get(folderProperty);
+        return configuration.getPathOrPrompt(FILE_COUNT_FOLDER);
     }
 
     private void applyConfiguredGroups(Map<String, FileGroupStatistics> statsByExtension) {
-        String groupProperty = properties.getStringOptional(FILE_COUNT_GROUPS).orElse("");
+        String groupProperty = configuration.getString(FILE_COUNT_GROUPS);
         if (groupProperty.isEmpty()) {
             return;
         }
@@ -127,7 +125,7 @@ public class FileCountRunner {
         if (cmdParts.length >= 3 && "desc".equals(cmdParts[2])) {
             comparator = comparator.reversed();
         }
-        boolean formatFileSize = properties.getBooleanOptional(FileUtilProperties.FORMAT_FILE_SIZE).orElse(false);
+        boolean formatFileSize = configuration.getBoolean(FORMAT_FILE_SIZE);
 
         stats.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(comparator))

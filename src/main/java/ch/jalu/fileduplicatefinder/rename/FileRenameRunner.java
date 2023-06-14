@@ -1,19 +1,18 @@
 package ch.jalu.fileduplicatefinder.rename;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.RENAME_DATE_DATE_FORMAT;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.RENAME_DATE_TO;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.RENAME_FOLDER;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.RENAME_REGEX_FROM;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.RENAME_REGEX_TO;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_DATE_DATE_FORMAT;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_DATE_TO;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_REGEX_FROM;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_REGEX_TO;
 
 public class FileRenameRunner {
 
@@ -21,26 +20,26 @@ public class FileRenameRunner {
     public static final String ID_DATE = "addDate";
 
     private final Scanner scanner;
-    private final FileUtilConfiguration properties;
+    private final FileUtilConfiguration configuration;
 
-    public FileRenameRunner(Scanner scanner, FileUtilConfiguration properties) {
+    public FileRenameRunner(Scanner scanner, FileUtilConfiguration configuration) {
         this.scanner = scanner;
-        this.properties = properties;
+        this.configuration = configuration;
     }
 
     public void runRegexRename() {
         Path folder = getFolderFromProperties();
-        Pattern fromPattern = Pattern.compile(properties.getString(RENAME_REGEX_FROM));
-        String replacement = properties.getString(RENAME_REGEX_TO);
+        Pattern fromPattern = configuration.getPattern(RENAME_REGEX_FROM);
+        String replacement = configuration.getString(RENAME_REGEX_TO);
         RegexFileRenamer renamer = new RegexFileRenamer(folder, fromPattern, replacement);
         executeFileRenamer(renamer);
     }
 
     public void runDateRename() {
         Path folder = getFolderFromProperties();
-        String replacement = properties.getString(RENAME_DATE_TO);
+        String replacement = configuration.getString(RENAME_DATE_TO);
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
-            properties.getString(RENAME_DATE_DATE_FORMAT));
+            configuration.getString(RENAME_DATE_DATE_FORMAT));
         ModifiedDateFileNameRenamer renamer = new ModifiedDateFileNameRenamer(folder, replacement, dateTimeFormatter);
         executeFileRenamer(renamer);
     }
@@ -64,7 +63,6 @@ public class FileRenameRunner {
     }
 
     private Path getFolderFromProperties() {
-        String folderProperty = properties.getString(RENAME_FOLDER);
-        return folderProperty == null ? Paths.get(".") : Paths.get(folderProperty);
+        return configuration.getPathOrPrompt(FileUtilSettings.RENAME_FOLDER);
     }
 }

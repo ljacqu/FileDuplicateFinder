@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
@@ -10,14 +10,13 @@ import com.google.common.base.Preconditions;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_ALGORITHM;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DISTRIBUTION;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DISTRIBUTION;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
 
 public class FileDuplicateRunner {
 
@@ -39,7 +38,7 @@ public class FileDuplicateRunner {
     }
 
     public void run() {
-        Path path = Paths.get(configuration.getString(DUPLICATE_FOLDER));
+        Path path = configuration.getPathOrPrompt(DUPLICATE_FOLDER);
         System.out.println("Processing '" + path.toAbsolutePath() + "'");
         Preconditions.checkArgument(Files.exists(path),
             "Path '" + path.toAbsolutePath() + "' does not exist");

@@ -1,7 +1,7 @@
 package ch.jalu.fileduplicatefinder;
 
-import ch.jalu.fileduplicatefinder.config.CreateConfigTask;
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateRunner;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
 import ch.jalu.fileduplicatefinder.filecount.FileCountRunner;
@@ -15,8 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
-
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.TASK;
 
 /**
  * Entry class with main method. Delegates to the appropriate task runner.
@@ -33,11 +31,8 @@ public class FileUtilsRunner {
                 return;
             }
 
-            String task = configuration.getString(TASK);
+            String task = configuration.getStringOrPrompt(FileUtilSettings.TASK);
             switch (task) {
-                case CreateConfigTask.ID:
-                    new CreateConfigTask().run();
-                    break;
                 case FileRenameRunner.ID_REGEX:
                     new FileRenameRunner(scanner, configuration).runRegexRename();
                     break;
@@ -54,8 +49,7 @@ public class FileUtilsRunner {
                     new FolderDiffRunner(configuration, new FileHasherFactory()).run();
                     break;
                 default:
-                    String taskList = CreateConfigTask.ID
-                        + ", " + FileRenameRunner.ID_REGEX
+                    String taskList = FileRenameRunner.ID_REGEX
                         + ", " + FileRenameRunner.ID_DATE
                         + ", " + FileDuplicateRunner.ID
                         + ", " + FileCountRunner.ID
@@ -77,8 +71,6 @@ public class FileUtilsRunner {
             userConfig = Paths.get(args[0]);
             if (!Files.exists(userConfig)) {
                 System.err.println("Supplied config file '" + userConfig.getFileName().toString() + "' does not exist");
-                System.err.println("You can create a config file with java -jar fileutils.jar -Dtask="
-                    + CreateConfigTask.ID);
                 return null;
             }
         }

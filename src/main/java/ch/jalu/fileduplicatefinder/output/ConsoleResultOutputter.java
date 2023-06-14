@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DUPLICATES;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 
 /**
@@ -43,7 +43,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     @Override
     public void outputDirectoryPairs(Map<FolderPair, Long> totalDuplicatesByFolderPair) {
-        Path rootFolder = configuration.getPath(DUPLICATE_FOLDER);
+        Path rootFolder = configuration.getPathOrPrompt(DUPLICATE_FOLDER);
         totalDuplicatesByFolderPair.entrySet().stream()
             .sorted(Map.Entry.<FolderPair, Long>comparingByValue().reversed())
             .map(cell -> cell.getValue() + ": " + cell.getKey().createTextOutput(rootFolder))
@@ -52,7 +52,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     private String formatEntry(DuplicateEntry entry) {
         String files = entry.getPaths().stream()
-            .map(path -> configuration.getPath(DUPLICATE_FOLDER).relativize(path).toString())
+            .map(path -> configuration.getPathOrPrompt(DUPLICATE_FOLDER).relativize(path).toString())
             .sorted()
             .collect(Collectors.joining(", "));
         String size = formatToHumanReadableSize(entry.getSize());

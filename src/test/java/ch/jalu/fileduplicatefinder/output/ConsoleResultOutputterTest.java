@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 import com.google.common.collect.ImmutableMap;
@@ -15,8 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_DUPLICATES;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -45,7 +45,7 @@ class ConsoleResultOutputterTest {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         String root = "root/folder/";
-        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(Paths.get(root));
+        given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get(root));
         given(configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(true);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         List<DuplicateEntry> duplicates = asList(
@@ -94,7 +94,7 @@ class ConsoleResultOutputterTest {
     void shouldOutputDuplicatesByFolderPair() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getPath(DUPLICATE_FOLDER)).willReturn(Paths.get("the-root"));
+        given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get("the-root"));
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         Map<FolderPair, Long> duplicatesByPair = ImmutableMap.of(
             new FolderPair(Paths.get("the-root/test"), Paths.get("the-root/test/first")), 2L,

@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.folderdiff;
 
-import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
@@ -18,10 +18,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DIFF_FILES_PROCESSED_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_ALGORITHM;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DIFF_FILES_PROCESSED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_MAX_SIZE_MB;
 
 /**
  * Compares all files (recursively) of two given folders and returns the differences it finds: new or deleted files,
@@ -148,7 +148,7 @@ public class FolderDiffAnalyzer {
     }
 
     private String createHashOrSizeString(FileElement fileElement) {
-        if (fileElement.getSize() > maxSizeBytesForHashing) {
+        if (maxSizeBytesForHashing > 0 && fileElement.getSize() > maxSizeBytesForHashing) {
             return "size=" + fileElement.getSize();
         }
 
