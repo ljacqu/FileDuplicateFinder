@@ -11,19 +11,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-public class PathProperty extends BaseProperty<Path> {
+/**
+ * Property impl. for Path objects.
+ */
+public class FuPathProperty extends BaseProperty<Path> {
 
     /**
      * Constructor.
      *
      * @param path the path of the property
      */
-    public PathProperty(String path) {
+    public FuPathProperty(String path) {
         super(path, Paths.get(""));
     }
 
     public static Property<Optional<Path>> newOptionalPathProperty(String path) {
-        return new OptionalProperty<>(new PathProperty(path));
+        return new OptionalProperty<>(new FuPathProperty(path));
     }
 
     @Nullable

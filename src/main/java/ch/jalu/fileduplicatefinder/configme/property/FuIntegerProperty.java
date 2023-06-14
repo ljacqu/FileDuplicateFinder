@@ -7,6 +7,9 @@ import com.google.common.primitives.Ints;
 
 import javax.annotation.Nullable;
 
+/**
+ * Custom integer property impl. for file utils (FU).
+ */
 public class FuIntegerProperty extends TypeBasedProperty<Integer> {
 
     /**
@@ -26,8 +29,6 @@ public class FuIntegerProperty extends TypeBasedProperty<Integer> {
         public Integer convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
             if (object instanceof String) {
                 return Ints.tryParse((String) object);
-            } else if (object instanceof Number) {
-                return ((Number) object).intValue();
             }
             return null;
         }

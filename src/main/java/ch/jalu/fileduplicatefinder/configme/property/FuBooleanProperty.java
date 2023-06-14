@@ -6,6 +6,9 @@ import ch.jalu.configme.properties.types.PropertyType;
 
 import javax.annotation.Nullable;
 
+/**
+ * Custom boolean property impl. for file utils (FU). Needed because ConfigMe does not convert from String to boolean.
+ */
 public class FuBooleanProperty extends TypeBasedProperty<Boolean> {
 
     /**
@@ -25,8 +28,6 @@ public class FuBooleanProperty extends TypeBasedProperty<Boolean> {
         public Boolean convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
             if (object instanceof String) {
                 return Boolean.parseBoolean((String) object);
-            } else if (object instanceof Boolean) {
-                return (Boolean) object;
             }
             return null;
         }

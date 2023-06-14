@@ -11,7 +11,7 @@ import static com.google.common.math.IntMath.ceilingPowerOfTwo;
 /**
  * Property for integers that are a power of two minus one (e.g. 63, 127, 255, 511).
  */
-public class PowerOfTwoMinusOneProperty extends BaseProperty<Integer> {
+public class FuPowerOfTwoMinusOneProperty extends BaseProperty<Integer> {
 
     /**
      * Constructor.
@@ -19,7 +19,7 @@ public class PowerOfTwoMinusOneProperty extends BaseProperty<Integer> {
      * @param path the path of the property
      * @param defaultValue the default value of the property
      */
-    public PowerOfTwoMinusOneProperty(String path, Integer defaultValue) {
+    public FuPowerOfTwoMinusOneProperty(String path, Integer defaultValue) {
         super(path, toPowerOfTwoMinusOne(defaultValue));
     }
 

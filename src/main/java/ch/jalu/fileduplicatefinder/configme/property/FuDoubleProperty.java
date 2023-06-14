@@ -7,6 +7,9 @@ import com.google.common.primitives.Doubles;
 
 import javax.annotation.Nullable;
 
+/**
+ * Custom double property impl. for file utils (FU).
+ */
 public class FuDoubleProperty extends TypeBasedProperty<Double> {
 
     /**
@@ -26,8 +29,6 @@ public class FuDoubleProperty extends TypeBasedProperty<Double> {
         public Double convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
             if (object instanceof String) {
                 return Doubles.tryParse((String) object);
-            } else if (object instanceof Number) {
-                return ((Number) object).doubleValue();
             }
             return null;
         }

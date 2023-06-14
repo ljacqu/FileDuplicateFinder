@@ -9,15 +9,18 @@ import ch.jalu.configme.properties.StringProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.configme.property.PowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
 import static ch.jalu.configme.properties.PropertyInitializer.newRegexProperty;
 import static ch.jalu.configme.properties.PropertyInitializer.optionalStringProperty;
-import static ch.jalu.fileduplicatefinder.configme.property.PathProperty.newOptionalPathProperty;
+import static ch.jalu.fileduplicatefinder.configme.property.FuPathProperty.newOptionalPathProperty;
 
+/**
+ * Defines all properties for the file utils.
+ */
 public class FileUtilSettings implements SettingsHolder {
 
     @Comment("Set to always run the same task (Possible values: rename,addDate,duplicates,filecount,diff)")
@@ -31,12 +34,11 @@ public class FileUtilSettings implements SettingsHolder {
     @Comment("Folder to rename files in (visits all child folders)")
     public static final Property<Optional<Path>> RENAME_FOLDER = newOptionalPathProperty("rename.folder");
 
-    // todo: backslashes are skipped in export
     @Comment("Regex rename: regex to match files by")
-    public static final RegexProperty RENAME_REGEX_FROM = newRegexProperty("rename.regex.from", "IMG_E(\\\\d+)\\\\.JPG");
+    public static final RegexProperty RENAME_REGEX_FROM = newRegexProperty("rename.regex.from", "IMG_E(\\d+)\\.JPG");
 
     @Comment("Regex rename: what to rename files to (use $1 etc. for capturing groups)")
-    public static final StringProperty RENAME_REGEX_TO = new StringProperty("rename.regex.to", "IMG_$1E\\\\.JPG");
+    public static final StringProperty RENAME_REGEX_TO = new StringProperty("rename.regex.to", "IMG_$1E\\.JPG");
 
     @Comment({
         "",
@@ -45,8 +47,10 @@ public class FileUtilSettings implements SettingsHolder {
     })
     public static final StringProperty RENAME_DATE_TO = new StringProperty("rename.date.to", "{date}_{file}");
 
-    @Comment("Date rename: formatting of the last modified date. See https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns")
-    public static final StringProperty RENAME_DATE_DATE_FORMAT = new StringProperty("rename.date.dateFormat", "yyyyMMdd");
+    @Comment("Date rename: formatting of the last modified date."
+        + " See https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns")
+    public static final StringProperty RENAME_DATE_DATE_FORMAT =
+        new StringProperty("rename.date.dateFormat", "yyyyMMdd");
 
     // --- Duplicate finder feature ---
 
@@ -63,18 +67,23 @@ public class FileUtilSettings implements SettingsHolder {
 
     @Comment({
         "Glob filter of files to consider (optional)",
-        "  See See https://docs.oracle.com/javase/7/docs/api/java/nio/file/FileSystem.html#getPathMatcher(java.lang.String)"
+        "  See https://docs.oracle.com/javase/7/docs/api/java/nio/file/FileSystem.html#getPathMatcher(java.lang.String)"
     })
-    public static final StringProperty DUPLICATE_FILTER_BLACKLIST = new StringProperty("duplicates.filter.blacklist", "");
-    public static final StringProperty DUPLICATE_FILTER_WHITELIST = new StringProperty("duplicates.filter.whitelist", "");
+    public static final StringProperty DUPLICATE_FILTER_BLACKLIST =
+        new StringProperty("duplicates.filter.blacklist", "");
+    public static final StringProperty DUPLICATE_FILTER_WHITELIST =
+        new StringProperty("duplicates.filter.whitelist", "");
 
     @Comment("Min and max size of files to consider (optional). 0 to disable")
-    public static final FuDoubleProperty DUPLICATE_FILTER_MIN_SIZE = new FuDoubleProperty("duplicates.filter.minSizeInMb", 0.0);
+    public static final FuDoubleProperty DUPLICATE_FILTER_MIN_SIZE =
+        new FuDoubleProperty("duplicates.filter.minSizeInMb", 0.0);
 
-    public static final FuDoubleProperty DUPLICATE_FILTER_MAX_SIZE = new FuDoubleProperty("duplicates.filter.maxSizeInMb", 0.0);
+    public static final FuDoubleProperty DUPLICATE_FILTER_MAX_SIZE =
+        new FuDoubleProperty("duplicates.filter.maxSizeInMb", 0.0);
 
     @Comment("One file in a matched group of duplicates must match the given pattern to be shown as result (optional)")
-    public static final StringProperty DUPLICATE_FILTER_RESULT_WHITELIST = new StringProperty("duplicates.filter.resultWhitelist", "");
+    public static final StringProperty DUPLICATE_FILTER_RESULT_WHITELIST =
+        new StringProperty("duplicates.filter.resultWhitelist", "");
 
     @Comment({
         "The number of bytes configured will first be read and compared for files that exceed the given file size",
@@ -90,20 +99,24 @@ public class FileUtilSettings implements SettingsHolder {
         "",
         "Configures what should be output. Besides \"showDuplicates\" everything else is a debug output."
     })
-    public static final FuBooleanProperty DUPLICATE_OUTPUT_DUPLICATES = new FuBooleanProperty("duplicates.output.showDuplicates", true);
+    public static final FuBooleanProperty DUPLICATE_OUTPUT_DUPLICATES =
+        new FuBooleanProperty("duplicates.output.showDuplicates", true);
 
-    public static final FuBooleanProperty DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT = new FuBooleanProperty("duplicates.output.showFolderPairCount", false);
+    public static final FuBooleanProperty DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT =
+        new FuBooleanProperty("duplicates.output.showFolderPairCount", false);
 
-    public static final FuBooleanProperty DUPLICATE_OUTPUT_DISTRIBUTION = new FuBooleanProperty("duplicates.output.showDistribution", false);
+    public static final FuBooleanProperty DUPLICATE_OUTPUT_DISTRIBUTION =
+        new FuBooleanProperty("duplicates.output.showDistribution", false);
 
-    public static final FuBooleanProperty DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH = new FuBooleanProperty("duplicates.output.showDifferenceReadFilesVsHash", false);
+    public static final FuBooleanProperty DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH =
+        new FuBooleanProperty("duplicates.output.showDifferenceReadFilesVsHash", false);
 
     @Comment("Interval in which to output some progress. Must be a power of 2 minus 1 (e.g. 63, 127, 255, 511)")
-    public static final PowerOfTwoMinusOneProperty DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL =
-        new PowerOfTwoMinusOneProperty("duplicates.output.progress.filesFoundInterval", 1023);
+    public static final FuPowerOfTwoMinusOneProperty DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL =
+        new FuPowerOfTwoMinusOneProperty("duplicates.output.progress.filesFoundInterval", 1023);
 
-    public static final PowerOfTwoMinusOneProperty DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL =
-        new PowerOfTwoMinusOneProperty("duplicates.output.progress.filesHashedInterval", 511);
+    public static final FuPowerOfTwoMinusOneProperty DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL =
+        new FuPowerOfTwoMinusOneProperty("duplicates.output.progress.filesHashedInterval", 511);
 
     // --- Duplicate finder feature ---
 
@@ -118,12 +131,14 @@ public class FileUtilSettings implements SettingsHolder {
 
     public static final Property<Optional<Path>> DIFF_FOLDER2 = newOptionalPathProperty("diff.folder2");
 
-    public static final FuBooleanProperty DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE = new FuBooleanProperty("diff.checkBySizeAndModificationDate", true);
+    public static final FuBooleanProperty DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE =
+        new FuBooleanProperty("diff.checkBySizeAndModificationDate", true);
 
-    public static final FuBooleanProperty DIFF_USE_SMART_FOLDER_PREFIXES = new FuBooleanProperty("diff.output.smartFolderPrefixes", true);
+    public static final FuBooleanProperty DIFF_USE_SMART_FOLDER_PREFIXES =
+        new FuBooleanProperty("diff.output.smartFolderPrefixes", true);
 
-    public static final PowerOfTwoMinusOneProperty DIFF_FILES_PROCESSED_INTERVAL =
-        new PowerOfTwoMinusOneProperty("diff.output.progress.filesProcessedInterval", 1023);
+    public static final FuPowerOfTwoMinusOneProperty DIFF_FILES_PROCESSED_INTERVAL =
+        new FuPowerOfTwoMinusOneProperty("diff.output.progress.filesProcessedInterval", 1023);
 
     private FileUtilSettings() {
     }

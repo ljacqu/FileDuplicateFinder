@@ -21,6 +21,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+/**
+ * Property resource implementation for {@code .properties} files. Note that certain features are not supported
+ * by the {@link PropertyFileReader resource reader}.
+ */
 public class PropertyFileResource implements PropertyResource {
 
     private final Path configFile;
@@ -85,7 +89,16 @@ public class PropertyFileResource implements PropertyResource {
 
     @Nullable
     private <T> String getExportValue(Property<T> property, ConfigurationData configurationData) {
-        return Objects.toString(property.toExportValue(configurationData.getValue(property)), null);
+        Object exportValue = property.toExportValue(configurationData.getValue(property));
+        if (exportValue == null) {
+            return null;
+        }
+
+        return exportValue.toString()
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
     }
 
     private String extractParentElement(String path) {

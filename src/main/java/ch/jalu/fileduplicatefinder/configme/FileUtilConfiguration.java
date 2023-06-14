@@ -9,7 +9,7 @@ import ch.jalu.configme.utils.Utils;
 import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.configme.property.PowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -20,14 +20,23 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+/**
+ * Provides values for all configurations.
+ */
 public class FileUtilConfiguration {
 
     private final SettingsManager settingsManager;
     private final ScannerPropertySource scannerPropertySource;
 
+    /**
+     * Constructor.
+     *
+     * @param scanner scanner instance to get user input when needed
+     * @param userPropertyFile custom path to the configuration file (nullable); a default name is used if null
+     */
     public FileUtilConfiguration(Scanner scanner, @Nullable Path userPropertyFile) {
         Path configFile = Objects.requireNonNullElseGet(userPropertyFile,
-            () -> Paths.get("./file-utils-config.properties"));
+            () -> Paths.get("./file-utils.properties"));
         this.settingsManager = createSettingsManager(configFile);
         this.scannerPropertySource = new ScannerPropertySource(scanner);
     }
@@ -52,9 +61,9 @@ public class FileUtilConfiguration {
         return fromOverridingSourceOrSettingsManager(property, Integer::parseInt);
     }
 
-    public int getPowerOfTwoMinusOne(PowerOfTwoMinusOneProperty property) {
+    public int getPowerOfTwoMinusOne(FuPowerOfTwoMinusOneProperty property) {
         return fromOverridingSourceOrSettingsManager(property,
-            str -> PowerOfTwoMinusOneProperty.toPowerOfTwoMinusOne(Integer.parseInt(str)));
+            str -> FuPowerOfTwoMinusOneProperty.toPowerOfTwoMinusOne(Integer.parseInt(str)));
     }
 
     public String getStringOrPrompt(Property<Optional<String>> property) {
