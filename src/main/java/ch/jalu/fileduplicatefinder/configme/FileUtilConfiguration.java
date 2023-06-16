@@ -9,6 +9,7 @@ import ch.jalu.configme.utils.Utils;
 import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.configme.property.FuOptionalEnumProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
 
 import javax.annotation.Nullable;
@@ -74,6 +75,12 @@ public class FileUtilConfiguration {
     public Path getPathOrPrompt(Property<Optional<Path>> property) {
         return fromOverridingSourceOrSettingsManager(property, str -> Optional.of(Paths.get(str)))
             .orElseGet(() -> Paths.get(scannerPropertySource.promptForString(property.getPath())));
+    }
+
+    // todo: Show possible values to the user if prompting him
+    public <E extends Enum<E>> E getEnumOrPrompt(FuOptionalEnumProperty<E> property) {
+        return fromOverridingSourceOrSettingsManager(property, str -> Optional.of(property.toEnumEntry(str)))
+            .orElseGet(() -> property.toEnumEntry(scannerPropertySource.promptForString(property.getPath())));
     }
 
     @Nullable

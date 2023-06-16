@@ -9,6 +9,7 @@ import ch.jalu.fileduplicatefinder.folderdiff.FolderDiffRunner;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.ConsoleResultOutputter;
 import ch.jalu.fileduplicatefinder.rename.FileRenameRunner;
+import ch.jalu.fileduplicatefinder.tree.FileTreeRunner;
 
 import javax.annotation.Nullable;
 import java.nio.file.Files;
@@ -48,12 +49,16 @@ public class FileUtilsRunner {
                 case FolderDiffRunner.ID:
                     new FolderDiffRunner(configuration, new FileHasherFactory()).run();
                     break;
+                case FileTreeRunner.ID:
+                    new FileTreeRunner(configuration).run();
+                    break;
                 default:
                     String taskList = FileRenameRunner.ID_REGEX
                         + ", " + FileRenameRunner.ID_DATE
                         + ", " + FileDuplicateRunner.ID
                         + ", " + FileCountRunner.ID
-                        + ", " + FolderDiffRunner.ID;
+                        + ", " + FolderDiffRunner.ID
+                        + ", " + FileTreeRunner.ID;
                     System.err.println("Unknown task '" + task + "'. Possible tasks: " + taskList);
             }
         }

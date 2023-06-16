@@ -9,7 +9,9 @@ import ch.jalu.configme.properties.StringProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.configme.property.FuOptionalEnumProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.tree.TreeDisplayMode;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -23,7 +25,7 @@ import static ch.jalu.fileduplicatefinder.configme.property.FuPathProperty.newOp
  */
 public class FileUtilSettings implements SettingsHolder {
 
-    @Comment("Set to always run the same task (Possible values: rename,addDate,duplicates,filecount,diff)")
+    @Comment("Set to always run the same task (Possible values: rename,addDate,duplicates,filecount,diff,tree)")
     public static final Property<Optional<String>> TASK = optionalStringProperty("task");
 
     @Comment("Format file size to human-readable units (e.g. 4.1 KB). If false, the number of bytes is always shown")
@@ -140,6 +142,30 @@ public class FileUtilSettings implements SettingsHolder {
     public static final FuPowerOfTwoMinusOneProperty DIFF_FILES_PROCESSED_INTERVAL =
         new FuPowerOfTwoMinusOneProperty("diff.output.progress.filesProcessedInterval", 1023);
 
+    // --- File tree ---
+
+    public static final Property<Optional<Path>> TREE_FOLDER = newOptionalPathProperty("tree.folder");
+
+    public static final FuOptionalEnumProperty<TreeDisplayMode> TREE_DISPLAY_MODE =
+        new FuOptionalEnumProperty<>("tree.displayMode", TreeDisplayMode.class);
+
+    public static final Property<Optional<String>> TREE_FILE_REGEX =
+        optionalStringProperty("tree.filter.fileRegex");
+
+    public static final Property<Optional<String>> TREE_DIRECTORY_REGEX =
+        optionalStringProperty("tree.filter.directoryRegex");
+
+    public static final FuDoubleProperty TREE_FILE_MIN_SIZE_MB =
+        new FuDoubleProperty("tree.filter.minSizeInMb", -1.0);
+
+    public static final FuDoubleProperty TREE_FILE_MAX_SIZE_MB =
+        new FuDoubleProperty("tree.filter.maxSizeInMb", -1.0);
+
+    public static final FuBooleanProperty TREE_INDENT_ELEMENTS =
+        new FuBooleanProperty("tree.output.indentElements", true);
+    public static final FuBooleanProperty TREE_SHOW_ABSOLUTE_PATH =
+        new FuBooleanProperty("tree.output.showAbsolutePath", false);
+
     private FileUtilSettings() {
     }
 
@@ -151,5 +177,7 @@ public class FileUtilSettings implements SettingsHolder {
             "#######", "Configuration for duplicate finder", "#######");
         conf.setComment("diff",
             "#######", "Folder diff", "#######");
+        conf.setComment("tree",
+            "#######", "File tree", "#######");
     }
 }
