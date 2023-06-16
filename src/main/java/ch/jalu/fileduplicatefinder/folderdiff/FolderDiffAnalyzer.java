@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder.folderdiff;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.base.Preconditions;
@@ -50,7 +51,7 @@ public class FolderDiffAnalyzer {
         this.folder2 = folder2;
         this.configuration = configuration;
 
-        String hashAlgorithm = configuration.getString(DUPLICATE_HASH_ALGORITHM);
+        HashingAlgorithm hashAlgorithm = configuration.getEnum(DUPLICATE_HASH_ALGORITHM);
         this.fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
     }
 

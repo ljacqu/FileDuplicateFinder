@@ -4,6 +4,7 @@ import ch.jalu.configme.properties.Property;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuEnumProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
 import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
@@ -188,7 +189,7 @@ public class FileTreeRunner {
             : configuration::getBoolean;
 
         TreeParameters parameters = new TreeParameters();
-        parameters.setDisplayMode(configuration.getEnumOrPrompt(TREE_DISPLAY_MODE, forcePrompt));
+        parameters.setDisplayMode(getEnumConfig(TREE_DISPLAY_MODE, forcePrompt));
         parameters.setFilePattern(getConfiguredPatternOrNull(TREE_FILE_REGEX, forcePrompt));
         parameters.setDirectoryPattern(getConfiguredPatternOrNull(TREE_DIRECTORY_REGEX, forcePrompt));
         parameters.setMinSizeBytes(getConfiguredNumberOfBytesOrNull(TREE_FILE_MIN_SIZE_MB, forcePrompt));
@@ -225,6 +226,13 @@ public class FileTreeRunner {
                                                boolean forcePrompt) {
         String pattern = configuration.getStringOrPrompt(patternProperty, forcePrompt);
         return pattern.isEmpty() ? null : Pattern.compile(pattern);
+    }
+
+    private <E extends Enum<E>> E getEnumConfig(FuEnumProperty<E> property,
+                                                boolean forcePrompt) {
+        return forcePrompt
+            ? configuration.promptEnum(property)
+            : configuration.getEnum(property);
     }
 
     /**

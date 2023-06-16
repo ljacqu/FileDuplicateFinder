@@ -1,26 +1,27 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
-import ch.jalu.configme.properties.EnumProperty;
-import ch.jalu.configme.properties.OptionalProperty;
+import ch.jalu.configme.properties.TypeBasedProperty;
+import ch.jalu.configme.properties.types.EnumPropertyType;
 
 /**
- * Optional property of an enum type. Custom implementation to be able to use the property's enum type for
+ * Property for an enum value. Custom implementation for file utils (FU) to be able to use the property's enum type for
  * more functionality.
  *
  * @param <E> the enum type
  */
-public class FuOptionalEnumProperty<E extends Enum<E>> extends OptionalProperty<E> {
+public class FuEnumProperty<E extends Enum<E>> extends TypeBasedProperty<E> {
 
     private final Class<E> enumType;
 
     /**
      * Constructor.
      *
-     * @param path the path of the property
      * @param type the enum type
+     * @param path the path of the property
+     * @param defaultValue the default value
      */
-    public FuOptionalEnumProperty(String path, Class<E> type) {
-        super(new EnumProperty<>(type, path, type.getEnumConstants()[0]));
+    public FuEnumProperty(Class<E> type, String path, E defaultValue) {
+        super(path, defaultValue, EnumPropertyType.of(type));
         this.enumType = type;
     }
 

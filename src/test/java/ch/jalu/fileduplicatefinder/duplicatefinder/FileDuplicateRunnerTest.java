@@ -2,6 +2,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,14 +39,14 @@ class FileDuplicateRunnerTest {
         given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(tempFolder);
         given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
         given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_HASH_ALGORITHM)).willReturn("configuredHash");
+        given(configuration.getEnum(DUPLICATE_HASH_ALGORITHM)).willReturn(HashingAlgorithm.CRC32);
         given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
         // when
         runner.run();
 
         // then
-        verify(fileHasherFactory).createFileHasher("configuredHash");
+        verify(fileHasherFactory).createFileHasher(HashingAlgorithm.CRC32);
         verify(entryOutputter).outputResult(anyList());
         verifyNoInteractions(folderDuplicatesCounter);
     }
@@ -62,7 +63,7 @@ class FileDuplicateRunnerTest {
         given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(tempFolder);
         given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
         given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_HASH_ALGORITHM)).willReturn("configuredHash");
+        given(configuration.getEnum(DUPLICATE_HASH_ALGORITHM)).willReturn(HashingAlgorithm.GFH);
         given(configuration.getBoolean(DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT)).willReturn(true);
         given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
@@ -70,7 +71,7 @@ class FileDuplicateRunnerTest {
         runner.run();
 
         // then
-        verify(fileHasherFactory).createFileHasher("configuredHash");
+        verify(fileHasherFactory).createFileHasher(HashingAlgorithm.GFH);
         verify(entryOutputter).outputResult(anyList());
         verify(folderDuplicatesCounter).getFolderToFolderDuplicateCount(anyCollection());
     }

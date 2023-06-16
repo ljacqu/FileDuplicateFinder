@@ -8,8 +8,8 @@ import ch.jalu.configme.properties.StringProperty;
 import ch.jalu.configme.utils.Utils;
 import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuEnumProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.config.property.FuOptionalEnumProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuPowerOfTwoMinusOneProperty;
 
 import javax.annotation.Nullable;
@@ -44,6 +44,10 @@ public class FileUtilConfiguration {
 
     public String getString(StringProperty property) {
         return fromOverridingSourceOrSettingsManager(property, Function.identity());
+    }
+
+    public <E extends Enum<E>> E getEnum(FuEnumProperty<E> property) {
+        return fromOverridingSourceOrSettingsManager(property, property::toEnumEntry);
     }
 
     public Pattern getPattern(RegexProperty property) {
@@ -84,21 +88,12 @@ public class FileUtilConfiguration {
             .orElseGet(() -> Paths.get(scannerPropertySource.promptForString(property.getPath())));
     }
 
-    public <E extends Enum<E>> E getEnumOrPrompt(FuOptionalEnumProperty<E> property) {
-        return getEnumOrPrompt(property, false);
-    }
-
-    // todo: Show possible values to the user if prompting him
-    public <E extends Enum<E>> E getEnumOrPrompt(FuOptionalEnumProperty<E> property, boolean forcePrompt) {
-        Optional<E> valueFromSource = forcePrompt
-            ? Optional.empty()
-            : fromOverridingSourceOrSettingsManager(property, str -> Optional.of(property.toEnumEntry(str)));
-        return valueFromSource
-            .orElseGet(() -> property.toEnumEntry(scannerPropertySource.promptForString(property.getPath())));
-    }
-
     public String promptString(StringProperty property) {
         return scannerPropertySource.promptForString(property.getPath());
+    }
+
+    public <E extends Enum<E>> E promptEnum(FuEnumProperty<E> enumProperty) {
+        return enumProperty.toEnumEntry(scannerPropertySource.promptForString(enumProperty.getPath()));
     }
 
     public boolean promptBoolean(FuBooleanProperty property) {

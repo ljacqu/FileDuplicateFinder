@@ -8,9 +8,10 @@ import ch.jalu.configme.properties.RegexProperty;
 import ch.jalu.configme.properties.StringProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuEnumProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.config.property.FuOptionalEnumProperty;
 import ch.jalu.fileduplicatefinder.config.property.FuPowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
 import ch.jalu.fileduplicatefinder.tree.TreeDisplayMode;
 
 import java.nio.file.Path;
@@ -62,9 +63,13 @@ public final class FileUtilSettings implements SettingsHolder {
     @Comment("Path to the folder to search inside for duplicates")
     public static final Property<Optional<Path>> DUPLICATE_FOLDER = newOptionalPathProperty("duplicates.folder");
 
-    // todo: enum
-    @Comment("Algorithm used to hash the file contents with")
-    public static final StringProperty DUPLICATE_HASH_ALGORITHM = new StringProperty("duplicates.hash.algorithm", "sha1");
+    @Comment({
+        "Algorithm used to hash the file contents with. (Supported values: GFH, CRC32, SHA1, SHA256)",
+        "GFH is Guava's 'good fast hash' with 128 bits. "
+            + "These hashes from GFH are not the same when the program is rerun later!"
+    })
+    public static final FuEnumProperty<HashingAlgorithm> DUPLICATE_HASH_ALGORITHM =
+        new FuEnumProperty<>(HashingAlgorithm.class, "duplicates.hash.algorithm", HashingAlgorithm.GFH);
 
     @Comment({
         "If a file's size exceeds the below threshold (in MB), the file will not be sized.",
@@ -184,8 +189,8 @@ public final class FileUtilSettings implements SettingsHolder {
     public static final Property<Optional<Path>> TREE_FOLDER = newOptionalPathProperty("tree.folder");
 
     @Comment("The element types to show in the output. (Possible values: ALL, DIRECTORIES, FILES)")
-    public static final FuOptionalEnumProperty<TreeDisplayMode> TREE_DISPLAY_MODE =
-        new FuOptionalEnumProperty<>("tree.displayMode", TreeDisplayMode.class);
+    public static final FuEnumProperty<TreeDisplayMode> TREE_DISPLAY_MODE =
+        new FuEnumProperty<>(TreeDisplayMode.class, "tree.displayMode", TreeDisplayMode.ALL);
 
     @Comment({
         "Regex a file name must match to be included in the tree output. Empty to disable.",

@@ -5,6 +5,7 @@ import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import com.google.common.base.Preconditions;
 
@@ -45,7 +46,7 @@ public class FileDuplicateRunner {
         Preconditions.checkArgument(Files.isDirectory(path),
             "Path '" + path.toAbsolutePath() + "' is not a directory");
 
-        String hashAlgorithm = configuration.getString(DUPLICATE_HASH_ALGORITHM);
+        HashingAlgorithm hashAlgorithm = configuration.getEnum(DUPLICATE_HASH_ALGORITHM);
         FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
 
         FilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
