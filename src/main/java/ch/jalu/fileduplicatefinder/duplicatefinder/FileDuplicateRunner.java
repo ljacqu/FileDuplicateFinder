@@ -39,14 +39,14 @@ public class FileDuplicateRunner {
     }
 
     public void run() {
-        Path path = configuration.getPathOrPrompt(DUPLICATE_FOLDER);
+        Path path = configuration.getValueOrPrompt(DUPLICATE_FOLDER);
         System.out.println("Processing '" + path.toAbsolutePath() + "'");
         Preconditions.checkArgument(Files.exists(path),
             "Path '" + path.toAbsolutePath() + "' does not exist");
         Preconditions.checkArgument(Files.isDirectory(path),
             "Path '" + path.toAbsolutePath() + "' is not a directory");
 
-        HashingAlgorithm hashAlgorithm = configuration.getEnum(DUPLICATE_HASH_ALGORITHM);
+        HashingAlgorithm hashAlgorithm = configuration.getValue(DUPLICATE_HASH_ALGORITHM);
         FileHasher fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
 
         FilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
@@ -54,7 +54,7 @@ public class FileDuplicateRunner {
         List<DuplicateEntry> duplicates = findDuplicates(path, fileHasher, pathMatcher);
         entryOutputter.outputResult(duplicates);
 
-        if (configuration.getBoolean(DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT)) {
+        if (configuration.getValue(DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT)) {
             System.out.println();
             System.out.println("Folder duplicates");
 
@@ -69,7 +69,7 @@ public class FileDuplicateRunner {
     private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, FilePathMatcher pathMatcher) {
         FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher, configuration);
         fileDuplicateFinder.processFiles();
-        if (configuration.getBoolean(DUPLICATE_OUTPUT_DISTRIBUTION)) {
+        if (configuration.getValue(DUPLICATE_OUTPUT_DISTRIBUTION)) {
             fileDuplicateFinder.getSizeDistribution().entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(e -> System.out.println(e.getValue() + " file size entries with " + e.getKey() + " files"));

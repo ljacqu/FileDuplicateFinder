@@ -29,7 +29,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
         System.out.println();
         if (duplicates.isEmpty()) {
             output("No duplicates found.");
-        } else if (configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)) {
+        } else if (configuration.getValue(DUPLICATE_OUTPUT_DUPLICATES)) {
             long sum = 0;
             for (DuplicateEntry entry : duplicates) {
                 output(formatEntry(entry));
@@ -43,7 +43,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     @Override
     public void outputDirectoryPairs(Map<FolderPair, Long> totalDuplicatesByFolderPair) {
-        Path rootFolder = configuration.getPathOrPrompt(DUPLICATE_FOLDER);
+        Path rootFolder = configuration.getValueOrPrompt(DUPLICATE_FOLDER);
         totalDuplicatesByFolderPair.entrySet().stream()
             .sorted(Map.Entry.<FolderPair, Long>comparingByValue().reversed())
             .map(cell -> cell.getValue() + ": " + cell.getKey().createTextOutput(rootFolder))
@@ -52,7 +52,7 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     private String formatEntry(DuplicateEntry entry) {
         String files = entry.getPaths().stream()
-            .map(path -> configuration.getPathOrPrompt(DUPLICATE_FOLDER).relativize(path).toString())
+            .map(path -> configuration.getValueOrPrompt(DUPLICATE_FOLDER).relativize(path).toString())
             .sorted()
             .collect(Collectors.joining(", "));
         String size = formatToHumanReadableSize(entry.getSize());

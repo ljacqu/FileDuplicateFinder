@@ -19,8 +19,7 @@ public class ScannerPropertySource {
         return scannerInputs.get(path);
     }
 
-    public String promptForString(String path) {
-        System.out.println("Provide value for '" + path + "':");
+    public String promptStringAndRegister(String path) {
         String valueFromScanner = scanner.nextLine();
         scannerInputs.put(path, valueFromScanner);
         return valueFromScanner;

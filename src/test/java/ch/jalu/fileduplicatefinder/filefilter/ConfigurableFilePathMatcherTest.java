@@ -33,11 +33,11 @@ class ConfigurableFilePathMatcherTest {
     void shouldMatchAllFilesByDefault() throws IOException {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getDouble(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.0);
-        given(configuration.getDouble(DUPLICATE_FILTER_MAX_SIZE)).willReturn(-1.0);
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE)).willReturn(-1.0);
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -52,10 +52,11 @@ class ConfigurableFilePathMatcherTest {
     void shouldFilterByWhitelistAndMaxSize() throws IOException {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("**/*.csv");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getDouble(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.001);
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("**/*.csv");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.001);
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -69,11 +70,11 @@ class ConfigurableFilePathMatcherTest {
     void shouldFilterByMinSizeAndBlacklist() throws IOException {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getDouble(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.00001);
-        given(configuration.getDouble(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.0);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("**/test*.txt");
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.00001);
+        given(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("**/test*.txt");
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
         // when
         ConfigurableFilePathMatcher result = new ConfigurableFilePathMatcher(configuration);
@@ -87,9 +88,11 @@ class ConfigurableFilePathMatcherTest {
     void shouldNotFilterFolders() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("whitelistThatWillNotMatchAnything");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("whitelistThatWillNotMatchAnything");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);
 
         // when
@@ -103,9 +106,9 @@ class ConfigurableFilePathMatcherTest {
     void shouldThrowForInvalidGlobSyntax() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("[!]");
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("[!]");
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("");
 
         // when / then
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -118,9 +121,11 @@ class ConfigurableFilePathMatcherTest {
     void shouldReturnIfListContainsPathMatchingFilter() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getString(DUPLICATE_FILTER_WHITELIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
-        given(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("*.csv");
+        given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)).willReturn("");
+        given(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE)).willReturn(0.0);
+        given(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST)).willReturn("*.csv");
         List<Path> paths1 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.csv"), Paths.get("file.pdf"));
         List<Path> paths2 = Arrays.asList(Paths.get("test.txt"), Paths.get("test.pdf"), Paths.get("file.doc"));
         ConfigurableFilePathMatcher pathMatcher = new ConfigurableFilePathMatcher(configuration);

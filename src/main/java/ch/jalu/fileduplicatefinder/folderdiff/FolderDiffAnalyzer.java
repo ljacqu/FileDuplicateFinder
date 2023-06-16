@@ -51,7 +51,7 @@ public class FolderDiffAnalyzer {
         this.folder2 = folder2;
         this.configuration = configuration;
 
-        HashingAlgorithm hashAlgorithm = configuration.getEnum(DUPLICATE_HASH_ALGORITHM);
+        HashingAlgorithm hashAlgorithm = configuration.getValue(DUPLICATE_HASH_ALGORITHM);
         this.fileHasher = fileHasherFactory.createFileHasher(hashAlgorithm);
     }
 
@@ -61,10 +61,10 @@ public class FolderDiffAnalyzer {
         Preconditions.checkArgument(Files.isDirectory(folder2),
             "Path '" + folder2.toAbsolutePath() + "' is not a directory");
 
-        maxSizeBytesForHashing = FileSizeUtils.megaBytesToBytes(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB));
-        checkSizeAndModificationDate = configuration.getBoolean(DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE);
+        maxSizeBytesForHashing = FileSizeUtils.megaBytesToBytes(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB));
+        checkSizeAndModificationDate = configuration.getValue(DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE);
 
-        int progressIncrements = configuration.getPowerOfTwoMinusOne(DIFF_FILES_PROCESSED_INTERVAL);
+        int progressIncrements = configuration.getValue(DIFF_FILES_PROCESSED_INTERVAL);
         ProgressHandler progressHandler = new ProgressHandler(progressCallback, progressIncrements);
         progressCallback.startScan();
         LinkedHashMap<String, FileElement> folder1ElementsByRelPath = new LinkedHashMap<>();

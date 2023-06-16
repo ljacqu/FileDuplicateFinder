@@ -56,8 +56,8 @@ public class FileDuplicateFinder {
         this.pathMatcher = pathMatcher;
         this.configuration = configuration;
 
-        this.progressFilesFound = configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL);
-        this.progressFilesHashed = configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL);
+        this.progressFilesFound = configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL);
+        this.progressFilesHashed = configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL);
     }
 
     public void processFiles() {
@@ -89,7 +89,7 @@ public class FileDuplicateFinder {
             .flatMap(hashEntriesInFileSizeAndReturnDuplicates())
             .sorted(createDuplicateEntryComparator())
             .collect(Collectors.toList());
-        if (configuration.getBoolean(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
+        if (configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
             System.out.println("Skipped hashing " + hashingSaveCount + " files from reading bytes before hashing");
         }
         return duplicateEntries;
@@ -124,7 +124,7 @@ public class FileDuplicateFinder {
 
     private Stream<DuplicateEntry> hashFilesAndReturnDuplicates(long fileSize, List<Path> paths,
                                                                 Runnable progressUpdater) {
-        double maxSizeMegabytes = configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB);
+        double maxSizeMegabytes = configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB);
         if (maxSizeMegabytes > 0 && fileSize >= megaBytesToBytes(maxSizeMegabytes)) {
             return Stream.of(new DuplicateEntry(fileSize, "Size " + fileSize, paths));
         }
@@ -145,10 +145,10 @@ public class FileDuplicateFinder {
     }
 
     private List<Path> getPathsToHash(List<Path> paths, long filesize) {
-        if (filesize >= megaBytesToBytes(configuration.getDouble(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE))) {
+        if (filesize >= megaBytesToBytes(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE))) {
             Multimap<WrappedByteArray, Path> files = HashMultimap.create(paths.size(), 2);
             for (Path path : paths) {
-                byte[] bytes = new byte[configuration.getInt(DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ)];
+                byte[] bytes = new byte[configuration.getValue(DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ)];
                 try (InputStream is = MoreFiles.asByteSource(path).openBufferedStream()) {
                     is.read(bytes);
                     files.put(new WrappedByteArray(bytes), path);
@@ -160,7 +160,7 @@ public class FileDuplicateFinder {
                 .filter(e -> e.getValue().size() > 1 && pathMatcher.hasFileFromResultWhitelist(e.getValue()))
                 .flatMap(e -> e.getValue().stream())
                 .collect(Collectors.toList());
-            if (configuration.getBoolean(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
+            if (configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
                 System.out.print(paths.size() + " -> " + filteredPaths.size() + " ");
                 hashingSaveCount += paths.size() - filteredPaths.size();
             }

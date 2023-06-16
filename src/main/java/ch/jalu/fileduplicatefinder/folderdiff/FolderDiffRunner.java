@@ -32,8 +32,8 @@ public class FolderDiffRunner {
     }
 
     public void run() {
-        Path folder1 = configuration.getPathOrPrompt(DIFF_FOLDER1);
-        Path folder2 = configuration.getPathOrPrompt(DIFF_FOLDER2);
+        Path folder1 = configuration.getValueOrPrompt(DIFF_FOLDER1);
+        Path folder2 = configuration.getValueOrPrompt(DIFF_FOLDER2);
 
         List<FileDifference> differences = new FolderDiffAnalyzer(folder1, folder2, configuration, fileHasherFactory)
             .collectDifferences(new ProgressUpdater());
@@ -48,7 +48,7 @@ public class FolderDiffRunner {
 
         String folder1Prefix;
         String folder2Prefix;
-        if (configuration.getBoolean(DIFF_USE_SMART_FOLDER_PREFIXES)) {
+        if (configuration.getValue(DIFF_USE_SMART_FOLDER_PREFIXES)) {
             String[] prefixes = getPrefixesForFolders(folder1, folder2);
             folder1Prefix = prefixes[0];
             folder2Prefix = prefixes[1];

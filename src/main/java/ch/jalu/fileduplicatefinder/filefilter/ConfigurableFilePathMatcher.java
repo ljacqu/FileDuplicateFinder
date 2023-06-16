@@ -30,11 +30,11 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
     private final @Nullable PathMatcher duplicateResultWhitelist;
 
     public ConfigurableFilePathMatcher(FileUtilConfiguration configuration) {
-        this.whitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_WHITELIST));
-        this.blacklist = negatePathMatcher(toWildcardPattern(configuration.getString(DUPLICATE_FILTER_BLACKLIST)));
-        this.fileSizeMinFilter = toSizeFilter(configuration.getDouble(DUPLICATE_FILTER_MIN_SIZE), true);
-        this.fileSizeMaxFilter = toSizeFilter(configuration.getDouble(DUPLICATE_FILTER_MAX_SIZE), false);
-        this.duplicateResultWhitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST));
+        this.whitelist = toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_WHITELIST));
+        this.blacklist = negatePathMatcher(toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)));
+        this.fileSizeMinFilter = toSizeFilter(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE), true);
+        this.fileSizeMaxFilter = toSizeFilter(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE), false);
+        this.duplicateResultWhitelist = toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST));
     }
 
     /**

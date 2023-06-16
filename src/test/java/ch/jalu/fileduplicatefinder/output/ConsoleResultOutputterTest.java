@@ -45,8 +45,8 @@ class ConsoleResultOutputterTest {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
         String root = "root/folder/";
-        given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get(root));
-        given(configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(true);
+        given(configuration.getValueOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get(root));
+        given(configuration.getValue(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(true);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         List<DuplicateEntry> duplicates = asList(
             new DuplicateEntry(347, "hash1",
@@ -75,7 +75,7 @@ class ConsoleResultOutputterTest {
     void shouldNotOutputDuplicates() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getBoolean(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(false);
+        given(configuration.getValue(DUPLICATE_OUTPUT_DUPLICATES)).willReturn(false);
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         List<DuplicateEntry> duplicates = asList(
             new DuplicateEntry(347, "hash1",
@@ -94,7 +94,7 @@ class ConsoleResultOutputterTest {
     void shouldOutputDuplicatesByFolderPair() {
         // given
         FileUtilConfiguration configuration = mock(FileUtilConfiguration.class);
-        given(configuration.getPathOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get("the-root"));
+        given(configuration.getValueOrPrompt(DUPLICATE_FOLDER)).willReturn(Paths.get("the-root"));
         TestConsoleResultOutputter resultOutputter = new TestConsoleResultOutputter(configuration);
         Map<FolderPair, Long> duplicatesByPair = ImmutableMap.of(
             new FolderPair(Paths.get("the-root/test"), Paths.get("the-root/test/first")), 2L,

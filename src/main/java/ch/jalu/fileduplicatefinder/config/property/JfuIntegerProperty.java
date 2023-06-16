@@ -1,16 +1,14 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
-import ch.jalu.configme.properties.TypeBasedProperty;
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
-import ch.jalu.configme.properties.types.PropertyType;
 import com.google.common.primitives.Ints;
 
 import javax.annotation.Nullable;
 
 /**
- * Custom integer property impl. for file utils (FU).
+ * Custom integer property impl. for Jalu file utils (JFU).
  */
-public class FuIntegerProperty extends TypeBasedProperty<Integer> {
+public class JfuIntegerProperty extends JfuProperty<Integer> {
 
     /**
      * Constructor.
@@ -18,19 +16,20 @@ public class FuIntegerProperty extends TypeBasedProperty<Integer> {
      * @param path the path of the property
      * @param defaultValue the default value of the property
      */
-    public FuIntegerProperty(String path, int defaultValue) {
+    public JfuIntegerProperty(String path, int defaultValue) {
         super(path, defaultValue, new IntegerPropertyType());
     }
 
-    private static final class IntegerPropertyType implements PropertyType<Integer> {
+    static final class IntegerPropertyType implements JfuPropertyType<Integer> {
 
         @Nullable
         @Override
-        public Integer convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
-            if (object instanceof String) {
-                return Ints.tryParse((String) object);
+        public Integer fromString(String value, ConvertErrorRecorder errorRecorder) {
+            Integer parsed = Ints.tryParse(value);
+            if (parsed == null) {
+                errorRecorder.setHasError("Invalid input; please provide an integer (e.g. 3 or 20)");
             }
-            return null;
+            return parsed;
         }
 
         @Override

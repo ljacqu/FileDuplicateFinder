@@ -1,11 +1,9 @@
 package ch.jalu.fileduplicatefinder.tree;
 
-import ch.jalu.configme.properties.Property;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
-import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
-import ch.jalu.fileduplicatefinder.config.property.FuEnumProperty;
-import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.config.property.JfuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.JfuIntegerProperty;
+import ch.jalu.fileduplicatefinder.config.property.JfuRegexProperty;
 import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import com.google.common.base.CharMatcher;
@@ -19,9 +17,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Scanner;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -56,12 +52,12 @@ public class FileTreeRunner {
     }
 
     public void run() {
-        Path folder = configuration.getPathOrPrompt(TREE_FOLDER);
+        Path folder = configuration.getValueOrPrompt(TREE_FOLDER);
         FileTreeGenerator fileTreeGenerator = new FileTreeGenerator(folder);
 
         System.out.print("Collecting all items in " + folder.toAbsolutePath().normalize() + ":");
         ConsoleProgressListener progressCallback = new ConsoleProgressListener(
-            configuration.getPowerOfTwoMinusOne(TREE_FILES_PROCESSED_INTERVAL));
+            configuration.getValue(TREE_FILES_PROCESSED_INTERVAL));
         FileTreeEntry treeRoot = fileTreeGenerator.generateTree(progressCallback::notifyItemProcessed);
         int totalItems = progressCallback.getCount();
         System.out.println("\nFound " + totalItems + " files and directories");
@@ -184,29 +180,23 @@ public class FileTreeRunner {
     }
 
     private TreeParameters createParams(boolean forcePrompt) {
-        Function<FuBooleanProperty, Boolean> booleanGetter = forcePrompt
-            ? configuration::promptBoolean
-            : configuration::getBoolean;
-
         TreeParameters parameters = new TreeParameters();
-        parameters.setDisplayMode(getEnumConfig(TREE_DISPLAY_MODE, forcePrompt));
+        parameters.setDisplayMode(configuration.getValue(TREE_DISPLAY_MODE, forcePrompt));
         parameters.setFilePattern(getConfiguredPatternOrNull(TREE_FILE_REGEX, forcePrompt));
         parameters.setDirectoryPattern(getConfiguredPatternOrNull(TREE_DIRECTORY_REGEX, forcePrompt));
         parameters.setMinSizeBytes(getConfiguredNumberOfBytesOrNull(TREE_FILE_MIN_SIZE_MB, forcePrompt));
         parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(TREE_FILE_MAX_SIZE_MB, forcePrompt));
         parameters.setMinItemsInDir(getConfiguredIntOrNullIfNegative(TREE_MIN_ITEMS_IN_FOLDER, forcePrompt));
         parameters.setMaxItemsInDir(getConfiguredIntOrNullIfNegative(TREE_MAX_ITEMS_IN_FOLDER, forcePrompt));
-        parameters.setFormatFileSize(booleanGetter.apply(FORMAT_FILE_SIZE));
-        parameters.setIndentElements(booleanGetter.apply(TREE_INDENT_ELEMENTS));
-        parameters.setShowAbsolutePath(booleanGetter.apply(TREE_SHOW_ABSOLUTE_PATH));
+        parameters.setFormatFileSize(configuration.getValue(FORMAT_FILE_SIZE, forcePrompt));
+        parameters.setIndentElements(configuration.getValue(TREE_INDENT_ELEMENTS, forcePrompt));
+        parameters.setShowAbsolutePath(configuration.getValue(TREE_SHOW_ABSOLUTE_PATH, forcePrompt));
         return parameters;
     }
 
     @Nullable
-    private Long getConfiguredNumberOfBytesOrNull(FuDoubleProperty megaBytesProperty, boolean forcePrompt) {
-        double megabytes = forcePrompt
-            ? configuration.promptDouble(megaBytesProperty)
-            : configuration.getDouble(megaBytesProperty);
+    private Long getConfiguredNumberOfBytesOrNull(JfuDoubleProperty megaBytesProperty, boolean forcePrompt) {
+        double megabytes = configuration.getValue(megaBytesProperty, forcePrompt);
         if (megabytes < 0.0) {
             return null;
         }
@@ -214,25 +204,16 @@ public class FileTreeRunner {
     }
 
     @Nullable
-    private Integer getConfiguredIntOrNullIfNegative(FuIntegerProperty intProperty, boolean forcePrompt) {
-        int value = forcePrompt
-            ? configuration.promptInteger(intProperty)
-            : configuration.getInt(intProperty);
+    private Integer getConfiguredIntOrNullIfNegative(JfuIntegerProperty intProperty, boolean forcePrompt) {
+        int value = configuration.getValue(intProperty, forcePrompt);
         return value < 0 ? null : value;
     }
 
     @Nullable
-    private Pattern getConfiguredPatternOrNull(Property<Optional<String>> patternProperty,
+    private Pattern getConfiguredPatternOrNull(JfuRegexProperty patternProperty,
                                                boolean forcePrompt) {
-        String pattern = configuration.getStringOrPrompt(patternProperty, forcePrompt);
-        return pattern.isEmpty() ? null : Pattern.compile(pattern);
-    }
-
-    private <E extends Enum<E>> E getEnumConfig(FuEnumProperty<E> property,
-                                                boolean forcePrompt) {
-        return forcePrompt
-            ? configuration.promptEnum(property)
-            : configuration.getEnum(property);
+        Pattern pattern = configuration.getValue(patternProperty, forcePrompt);
+        return pattern.pattern().isEmpty() ? null : pattern;
     }
 
     /**

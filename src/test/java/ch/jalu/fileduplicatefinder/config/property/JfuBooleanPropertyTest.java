@@ -9,52 +9,52 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 /**
- * Test for {@link FuDoubleProperty}.
+ * Test for {@link JfuBooleanProperty}.
  */
-class FuDoublePropertyTest {
+class JfuBooleanPropertyTest {
 
     @Test
     void shouldReadFromResource() {
         // given
-        FuDoubleProperty property = new FuDoubleProperty("sample.size", 69);
+        JfuBooleanProperty property = new JfuBooleanProperty("example.isTest", true);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("sample.size")).willReturn("44.25");
+        given(reader.getObject("example.isTest")).willReturn("false");
 
         // when
-        PropertyValue<Double> propertyValue = property.determineValue(reader);
+        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(44.25);
+        assertThat(propertyValue.getValue()).isEqualTo(false);
         assertThat(propertyValue.isValidInResource()).isEqualTo(true);
     }
 
     @Test
     void shouldRejectInvalidValueFromResource() {
         // given
-        FuDoubleProperty property = new FuDoubleProperty("sample.size", 7.0);
+        JfuBooleanProperty property = new JfuBooleanProperty("example.isTest", true);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("sample.size")).willReturn("invalid");
+        given(reader.getObject("example.isTest")).willReturn(2);
 
         // when
-        PropertyValue<Double> propertyValue = property.determineValue(reader);
+        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(7.0); // default value
+        assertThat(propertyValue.getValue()).isEqualTo(true); // default value
         assertThat(propertyValue.isValidInResource()).isEqualTo(false);
     }
 
     @Test
     void shouldReturnValueForNullFromResource() {
         // given
-        FuDoubleProperty property = new FuDoubleProperty("sample.size", 7.0);
+        JfuBooleanProperty property = new JfuBooleanProperty("example.isTest", true);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("sample.size")).willReturn(null);
+        given(reader.getObject("example.isTest")).willReturn(null);
 
         // when
-        PropertyValue<Double> propertyValue = property.determineValue(reader);
+        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(7.0); // default value
+        assertThat(propertyValue.getValue()).isEqualTo(true); // default value
         assertThat(propertyValue.isValidInResource()).isEqualTo(false);
     }
 }

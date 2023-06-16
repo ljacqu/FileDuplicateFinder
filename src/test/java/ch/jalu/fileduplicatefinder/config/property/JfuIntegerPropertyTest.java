@@ -9,52 +9,52 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 /**
- * Test for {@link FuBooleanProperty}.
+ * Test for {@link JfuIntegerProperty}.
  */
-class FuBooleanPropertyTest {
+class JfuIntegerPropertyTest {
 
     @Test
     void shouldReadFromResource() {
         // given
-        FuBooleanProperty property = new FuBooleanProperty("example.isTest", true);
+        JfuIntegerProperty property = new JfuIntegerProperty("sample.size", 69);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("example.isTest")).willReturn("false");
+        given(reader.getObject("sample.size")).willReturn("75");
 
         // when
-        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
+        PropertyValue<Integer> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(false);
+        assertThat(propertyValue.getValue()).isEqualTo(75);
         assertThat(propertyValue.isValidInResource()).isEqualTo(true);
     }
 
     @Test
     void shouldRejectInvalidValueFromResource() {
         // given
-        FuBooleanProperty property = new FuBooleanProperty("example.isTest", true);
+        JfuIntegerProperty property = new JfuIntegerProperty("sample.size", 1);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("example.isTest")).willReturn(2);
+        given(reader.getObject("sample.size")).willReturn("invalid");
 
         // when
-        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
+        PropertyValue<Integer> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(true); // default value
+        assertThat(propertyValue.getValue()).isEqualTo(1); // default value
         assertThat(propertyValue.isValidInResource()).isEqualTo(false);
     }
 
     @Test
     void shouldReturnValueForNullFromResource() {
         // given
-        FuBooleanProperty property = new FuBooleanProperty("example.isTest", true);
+        JfuIntegerProperty property = new JfuIntegerProperty("sample.size", 1);
         PropertyReader reader = mock(PropertyReader.class);
-        given(reader.getObject("example.isTest")).willReturn(null);
+        given(reader.getObject("sample.size")).willReturn(null);
 
         // when
-        PropertyValue<Boolean> propertyValue = property.determineValue(reader);
+        PropertyValue<Integer> propertyValue = property.determineValue(reader);
 
         // then
-        assertThat(propertyValue.getValue()).isEqualTo(true); // default value
+        assertThat(propertyValue.getValue()).isEqualTo(1); // default value
         assertThat(propertyValue.isValidInResource()).isEqualTo(false);
     }
 }

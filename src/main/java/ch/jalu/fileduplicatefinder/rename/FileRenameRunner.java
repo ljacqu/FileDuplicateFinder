@@ -28,18 +28,18 @@ public class FileRenameRunner {
     }
 
     public void runRegexRename() {
-        Path folder = getFolderFromProperties();
-        Pattern fromPattern = configuration.getPattern(RENAME_REGEX_FROM);
-        String replacement = configuration.getString(RENAME_REGEX_TO);
+        Path folder = configuration.getValueOrPrompt(FileUtilSettings.RENAME_FOLDER);
+        Pattern fromPattern = configuration.getValue(RENAME_REGEX_FROM);
+        String replacement = configuration.getValue(RENAME_REGEX_TO);
         RegexFileRenamer renamer = new RegexFileRenamer(folder, fromPattern, replacement);
         executeFileRenamer(renamer);
     }
 
     public void runDateRename() {
-        Path folder = getFolderFromProperties();
-        String replacement = configuration.getString(RENAME_DATE_TO);
+        Path folder = configuration.getValueOrPrompt(FileUtilSettings.RENAME_FOLDER);
+        String replacement = configuration.getValue(RENAME_DATE_TO);
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
-            configuration.getString(RENAME_DATE_DATE_FORMAT));
+            configuration.getValue(RENAME_DATE_DATE_FORMAT));
         ModifiedDateFileNameRenamer renamer = new ModifiedDateFileNameRenamer(folder, replacement, dateTimeFormatter);
         executeFileRenamer(renamer);
     }
@@ -60,9 +60,5 @@ public class FileRenameRunner {
         } else {
             System.out.println("Canceled renaming");
         }
-    }
-
-    private Path getFolderFromProperties() {
-        return configuration.getPathOrPrompt(FileUtilSettings.RENAME_FOLDER);
     }
 }

@@ -32,7 +32,7 @@ public class FileUtilsRunner {
                 return;
             }
 
-            String task = configuration.getStringOrPrompt(FileUtilSettings.TASK);
+            String task = configuration.getValueOrPrompt(FileUtilSettings.TASK);
             switch (task) {
                 case FileRenameRunner.ID_REGEX:
                     new FileRenameRunner(scanner, configuration).runRegexRename();

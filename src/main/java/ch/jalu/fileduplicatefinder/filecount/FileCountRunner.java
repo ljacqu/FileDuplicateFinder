@@ -53,11 +53,11 @@ public class FileCountRunner {
     }
 
     private Path getFolderFromProperties() {
-        return configuration.getPathOrPrompt(FILE_COUNT_FOLDER);
+        return configuration.getValueOrPrompt(FILE_COUNT_FOLDER);
     }
 
     private void applyConfiguredGroups(Map<String, FileGroupStatistics> statsByExtension) {
-        String groupProperty = configuration.getString(FILE_COUNT_GROUPS);
+        String groupProperty = configuration.getValue(FILE_COUNT_GROUPS);
         if (groupProperty.isEmpty()) {
             return;
         }
@@ -125,7 +125,7 @@ public class FileCountRunner {
         if (cmdParts.length >= 3 && "desc".equals(cmdParts[2])) {
             comparator = comparator.reversed();
         }
-        boolean formatFileSize = configuration.getBoolean(FORMAT_FILE_SIZE);
+        boolean formatFileSize = configuration.getValue(FORMAT_FILE_SIZE);
 
         stats.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(comparator))

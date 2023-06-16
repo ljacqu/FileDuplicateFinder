@@ -1,16 +1,14 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
-import ch.jalu.configme.properties.TypeBasedProperty;
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
-import ch.jalu.configme.properties.types.PropertyType;
 import com.google.common.primitives.Doubles;
 
 import javax.annotation.Nullable;
 
 /**
- * Custom double property impl. for file utils (FU).
+ * Custom double property impl. for Jalu file utils (JFU).
  */
-public class FuDoubleProperty extends TypeBasedProperty<Double> {
+public class JfuDoubleProperty extends JfuProperty<Double> {
 
     /**
      * Constructor.
@@ -18,19 +16,20 @@ public class FuDoubleProperty extends TypeBasedProperty<Double> {
      * @param path the path of the property
      * @param defaultValue the default value of the property
      */
-    public FuDoubleProperty(String path, double defaultValue) {
+    public JfuDoubleProperty(String path, double defaultValue) {
         super(path, defaultValue, new DoublePropertyType());
     }
 
-    private static final class DoublePropertyType implements PropertyType<Double> {
+    private static final class DoublePropertyType implements JfuPropertyType<Double> {
 
         @Nullable
         @Override
-        public Double convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
-            if (object instanceof String) {
-                return Doubles.tryParse((String) object);
+        public Double fromString(String value, ConvertErrorRecorder errorRecorder) {
+            Double parsed = Doubles.tryParse(value);
+            if (parsed == null) {
+                errorRecorder.setHasError("Invalid input; please provide a number (e.g. 3 or 3.14)");
             }
-            return null;
+            return parsed;
         }
 
         @Override
