@@ -2,6 +2,7 @@ package ch.jalu.fileduplicatefinder.tree;
 
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
+import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,6 +27,7 @@ public class FileTreeGenerator {
         return visit(root);
     }
 
+    @Nullable
     private FileTreeEntry visit(Path path) {
         if (Files.isRegularFile(path)) {
             FileTreeEntry entry = new FileTreeEntry(path);
