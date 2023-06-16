@@ -73,6 +73,21 @@ public class TreeParameters {
         }
     }
 
+    public boolean hasConflictingFilters() {
+        if (minSizeBytes != null && maxSizeBytes != null && minSizeBytes > maxSizeBytes) {
+            return true;
+        }
+        if (minItemsInDir != null && maxItemsInDir != null && minItemsInDir > maxItemsInDir) {
+            return true;
+        }
+
+        boolean hasFileExclusiveFilters = (filePattern != null && directoryPattern == null)
+            || minSizeBytes != null || maxSizeBytes != null;
+        boolean hasDirectoryExclusiveFilters = (filePattern == null && directoryPattern != null)
+            || minItemsInDir != null || maxItemsInDir != null;
+        return hasFileExclusiveFilters && hasDirectoryExclusiveFilters;
+    }
+
 
     // Getters and setters
 

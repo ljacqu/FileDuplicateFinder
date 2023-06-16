@@ -23,20 +23,24 @@ public class FileTreeGenerator {
         this.root = root;
     }
 
-    public FileTreeEntry generateTree() {
-        return visit(root);
+    public FileTreeEntry generateTree(Runnable progressCallback) {
+        return visit(root, progressCallback);
     }
 
     @Nullable
-    private FileTreeEntry visit(Path path) {
+    private FileTreeEntry visit(Path path, Runnable progressCallback) {
         if (Files.isRegularFile(path)) {
+            progressCallback.run();
             FileTreeEntry entry = new FileTreeEntry(path);
             entry.setSize(PathUtils.size(path));
             return entry;
+
         } else if (Files.isDirectory(path)) {
+            progressCallback.run();
             long[] totalSize = { 0 };
+
             List<FileTreeEntry> childElements = PathUtils.list(path)
-                .map(this::visit)
+                .map(child -> visit(child, progressCallback))
                 .filter(Objects::nonNull)
                 .peek(entry -> totalSize[0] += entry.getSize())
                 .collect(Collectors.toUnmodifiableList());

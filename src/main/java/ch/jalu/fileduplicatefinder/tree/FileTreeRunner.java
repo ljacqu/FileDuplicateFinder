@@ -2,9 +2,10 @@ package ch.jalu.fileduplicatefinder.tree;
 
 import ch.jalu.configme.properties.Property;
 import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
+import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
 import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
@@ -18,13 +19,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
+import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FORMAT_FILE_SIZE;
 import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_DIRECTORY_REGEX;
 import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_DISPLAY_MODE;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILES_PROCESSED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_MIN_SIZE_MB;
 import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_REGEX;
 import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_INDENT_ELEMENTS;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_MAX_ITEMS_IN_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_MIN_ITEMS_IN_FOLDER;
+import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_SHOW_ABSOLUTE_PATH;
 
 /**
  * Outputs a file tree with configurable filters.
@@ -35,9 +46,11 @@ public class FileTreeRunner {
 
     private static final CharMatcher FILE_SEPARATOR_MATCHER = CharMatcher.is(File.separatorChar);
 
+    private final Scanner scanner;
     private final FileUtilConfiguration configuration;
 
-    public FileTreeRunner(FileUtilConfiguration configuration) {
+    public FileTreeRunner(Scanner scanner, FileUtilConfiguration configuration) {
+        this.scanner = scanner;
         this.configuration = configuration;
     }
 
@@ -45,15 +58,64 @@ public class FileTreeRunner {
         Path folder = configuration.getPathOrPrompt(TREE_FOLDER);
         FileTreeGenerator fileTreeGenerator = new FileTreeGenerator(folder);
 
-        TreeParameters params = createParams();
-        FileTreeEntry treeRoot = fileTreeGenerator.generateTree();
-        System.out.println("Collected all elements");
+        System.out.print("Collecting all items in " + folder.toAbsolutePath().normalize() + ":");
+        ConsoleProgressListener progressCallback = new ConsoleProgressListener(
+            configuration.getPowerOfTwoMinusOne(TREE_FILES_PROCESSED_INTERVAL));
+        FileTreeEntry treeRoot = fileTreeGenerator.generateTree(progressCallback::notifyItemProcessed);
+        int totalItems = progressCallback.getCount();
+        System.out.println("\nFound " + totalItems + " files and directories");
 
-        filterRelevantEntries(treeRoot, params).forEach(elem -> printElement(elem, folder, params));
+        TreeParameters params = createParams(false);
+        List<FileTreeEntry> relevantEntries = filterAndOutputRelevantEntries(treeRoot, params, totalItems);
+
+        String task = "help";
+        do {
+            switch (task) {
+                case "dump":
+                    throw new UnsupportedOperationException("Not yet implemented"); // TODO :)
+
+                case "config":
+                    params = createParams(true);
+                    relevantEntries = filterAndOutputRelevantEntries(treeRoot, params, totalItems);
+                    break;
+
+                case "debug":
+                    System.out.println("Conflicting filters: " + params.hasConflictingFilters());
+                    filterRelevantEntries(treeRoot, params, true);
+                    break;
+
+                default:
+                    System.out.println("- Type 'dump' to dump the results to a file");
+                    System.out.println("- Type 'exit' to stop");
+                    System.out.println("- Type 'config' to reconfigure all parameters");
+                    System.out.println("- Type 'debug' to debug the parameters");
+            }
+            task = scanner.nextLine();
+        } while (!task.equals("exit"));
     }
 
-    private Stream<FileTreeEntry> filterRelevantEntries(FileTreeEntry root, TreeParameters params) {
-        RelevantFileEntryCollector collector = new RelevantFileEntryCollector(root);
+    private List<FileTreeEntry> filterAndOutputRelevantEntries(FileTreeEntry treeRoot, TreeParameters params,
+                                                               int totalItems) {
+        List<FileTreeEntry> relevantEntries = filterRelevantEntries(treeRoot, params, false);
+
+        System.out.println("Matched " + relevantEntries.size() + " out of " + totalItems + " items");
+        if (relevantEntries.size() == 1) {
+            System.out.println("Note: The root is never filtered out.");
+        }
+        if (params.hasConflictingFilters()) {
+            System.out.println("Warning: Conflicting filters were found, which may never match any items. "
+                + "Please recheck your filters.");
+        }
+        System.out.println();
+
+        Path root = treeRoot.getPath();
+        relevantEntries.forEach(elem -> printElement(elem, root, params));
+        return relevantEntries;
+    }
+
+    private List<FileTreeEntry> filterRelevantEntries(FileTreeEntry root, TreeParameters params,
+                                                      boolean printDebug) {
+        RelevantFileEntryCollector collector = new RelevantFileEntryCollector(root, printDebug);
 
         for (FileTreeEntry child : root.getChildren()) {
             addEntryAndChildrenToListIfRelevantRecursively(collector, child, params);
@@ -80,7 +142,20 @@ public class FileTreeRunner {
         if (isRelevant) {
             collector.addRelevantEntry(entry);
         }
+
+        if (collector.isDebug()) {
+            String filterInfo = isMatch
+                ? "passed"
+                : createDebugTextForChecks(relativeName, entry, params) + "; hasRelevantChild=" + hasRelevantChild;
+            System.out.println(relativeName + ": " + filterInfo);
+        }
         return isRelevant;
+    }
+
+    private String createDebugTextForChecks(String relativeName, FileTreeEntry entry, TreeParameters params) {
+        return "regex=" + params.matchesRegexFilters(entry.getPath(), relativeName)
+            + ", size=" + params.matchesSizeFilters(entry)
+            + ", itemsInDir=" + params.matchesItemsInDirFilters(entry);
     }
 
     private void printElement(FileTreeEntry entry, Path root, TreeParameters params) {
@@ -107,25 +182,30 @@ public class FileTreeRunner {
         }
     }
 
-    private TreeParameters createParams() {
+    private TreeParameters createParams(boolean forcePrompt) {
+        Function<FuBooleanProperty, Boolean> booleanGetter = forcePrompt
+            ? configuration::promptBoolean
+            : configuration::getBoolean;
+
         TreeParameters parameters = new TreeParameters();
-        parameters.setDisplayMode(configuration.getEnumOrPrompt(TREE_DISPLAY_MODE));
-        parameters.setFilePattern(getConfiguredPatternOrNull(TREE_FILE_REGEX));
-        parameters.setDirectoryPattern(getConfiguredPatternOrNull(TREE_DIRECTORY_REGEX));
-        parameters.setMinSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MIN_SIZE_MB));
-        parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MAX_SIZE_MB));
-        parameters.setMinItemsInDir(getConfiguredIntOrNullIfNegative(FileUtilSettings.TREE_MIN_ITEMS_IN_FOLDER));
-        parameters.setMaxItemsInDir(getConfiguredIntOrNullIfNegative(FileUtilSettings.TREE_MAX_ITEMS_IN_FOLDER));
-        parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MAX_SIZE_MB));
-        parameters.setFormatFileSize(configuration.getBoolean(FileUtilSettings.FORMAT_FILE_SIZE));
-        parameters.setIndentElements(configuration.getBoolean(FileUtilSettings.TREE_INDENT_ELEMENTS));
-        parameters.setShowAbsolutePath(configuration.getBoolean(FileUtilSettings.TREE_SHOW_ABSOLUTE_PATH));
+        parameters.setDisplayMode(configuration.getEnumOrPrompt(TREE_DISPLAY_MODE, forcePrompt));
+        parameters.setFilePattern(getConfiguredPatternOrNull(TREE_FILE_REGEX, forcePrompt));
+        parameters.setDirectoryPattern(getConfiguredPatternOrNull(TREE_DIRECTORY_REGEX, forcePrompt));
+        parameters.setMinSizeBytes(getConfiguredNumberOfBytesOrNull(TREE_FILE_MIN_SIZE_MB, forcePrompt));
+        parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(TREE_FILE_MAX_SIZE_MB, forcePrompt));
+        parameters.setMinItemsInDir(getConfiguredIntOrNullIfNegative(TREE_MIN_ITEMS_IN_FOLDER, forcePrompt));
+        parameters.setMaxItemsInDir(getConfiguredIntOrNullIfNegative(TREE_MAX_ITEMS_IN_FOLDER, forcePrompt));
+        parameters.setFormatFileSize(booleanGetter.apply(FORMAT_FILE_SIZE));
+        parameters.setIndentElements(booleanGetter.apply(TREE_INDENT_ELEMENTS));
+        parameters.setShowAbsolutePath(booleanGetter.apply(TREE_SHOW_ABSOLUTE_PATH));
         return parameters;
     }
 
     @Nullable
-    private Long getConfiguredNumberOfBytesOrNull(FuDoubleProperty megaBytesProperty) {
-        double megabytes = configuration.getDouble(megaBytesProperty);
+    private Long getConfiguredNumberOfBytesOrNull(FuDoubleProperty megaBytesProperty, boolean forcePrompt) {
+        double megabytes = forcePrompt
+            ? configuration.promptDouble(megaBytesProperty)
+            : configuration.getDouble(megaBytesProperty);
         if (megabytes < 0.0) {
             return null;
         }
@@ -133,14 +213,17 @@ public class FileTreeRunner {
     }
 
     @Nullable
-    private Integer getConfiguredIntOrNullIfNegative(FuIntegerProperty intProperty) {
-        int value = configuration.getInt(intProperty);
+    private Integer getConfiguredIntOrNullIfNegative(FuIntegerProperty intProperty, boolean forcePrompt) {
+        int value = forcePrompt
+            ? configuration.promptInteger(intProperty)
+            : configuration.getInt(intProperty);
         return value < 0 ? null : value;
     }
 
     @Nullable
-    private Pattern getConfiguredPatternOrNull(Property<Optional<String>> patternProperty) {
-        String pattern = configuration.getStringOrPrompt(patternProperty);
+    private Pattern getConfiguredPatternOrNull(Property<Optional<String>> patternProperty,
+                                               boolean forcePrompt) {
+        String pattern = configuration.getStringOrPrompt(patternProperty, forcePrompt);
         return pattern.isEmpty() ? null : Pattern.compile(pattern);
     }
 
@@ -150,6 +233,7 @@ public class FileTreeRunner {
     private static final class RelevantFileEntryCollector {
 
         private final Path root;
+        private final boolean isDebug;
         private final Map<FileTreeEntry, Integer> orderByEntry = new HashMap<>();
         private final List<FileTreeEntry> relevantEntries = new ArrayList<>();
         private int currentPosition = 0;
@@ -158,11 +242,17 @@ public class FileTreeRunner {
          * Constructor. Registers and adds the given entry as a relevant entry (the root is always deemed relevant).
          *
          * @param rootEntry the root entry
+         * @param isDebug defines whether we should log debug output
          */
-        RelevantFileEntryCollector(FileTreeEntry rootEntry) {
+        RelevantFileEntryCollector(FileTreeEntry rootEntry, boolean isDebug) {
             this.root = rootEntry.getPath();
+            this.isDebug = isDebug;
             registerEntry(rootEntry);
             addRelevantEntry(rootEntry);
+        }
+
+        boolean isDebug() {
+            return isDebug;
         }
 
         /**
@@ -199,9 +289,10 @@ public class FileTreeRunner {
          *
          * @return relevant entries (sorted)
          */
-        Stream<FileTreeEntry> getRelevantEntriesSorted() {
+        List<FileTreeEntry> getRelevantEntriesSorted() {
             return relevantEntries.stream()
-                .sorted(Comparator.comparing(orderByEntry::get));
+                .sorted(Comparator.comparing(orderByEntry::get))
+                .collect(Collectors.toList());
         }
     }
 }

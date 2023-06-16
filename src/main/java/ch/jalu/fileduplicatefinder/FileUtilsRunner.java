@@ -50,7 +50,7 @@ public class FileUtilsRunner {
                     new FolderDiffRunner(configuration, new FileHasherFactory()).run();
                     break;
                 case FileTreeRunner.ID:
-                    new FileTreeRunner(configuration).run();
+                    new FileTreeRunner(scanner, configuration).run();
                     break;
                 default:
                     String taskList = FileRenameRunner.ID_REGEX

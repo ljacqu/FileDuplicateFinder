@@ -172,6 +172,9 @@ public class FileUtilSettings implements SettingsHolder {
     public static final FuBooleanProperty TREE_SHOW_ABSOLUTE_PATH =
         new FuBooleanProperty("tree.output.showAbsolutePath", false);
 
+    public static final FuPowerOfTwoMinusOneProperty TREE_FILES_PROCESSED_INTERVAL =
+        new FuPowerOfTwoMinusOneProperty("tree.output.progress.filesProcessedInterval", 256);
+
     private FileUtilSettings() {
     }
 

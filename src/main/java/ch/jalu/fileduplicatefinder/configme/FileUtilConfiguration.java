@@ -68,7 +68,14 @@ public class FileUtilConfiguration {
     }
 
     public String getStringOrPrompt(Property<Optional<String>> property) {
-        return fromOverridingSourceOrSettingsManager(property, Optional::of)
+        return getStringOrPrompt(property, false);
+    }
+
+    public String getStringOrPrompt(Property<Optional<String>> property, boolean forcePrompt) {
+        Optional<String> valueFromSource = forcePrompt
+            ? Optional.empty()
+            : fromOverridingSourceOrSettingsManager(property, Optional::of);
+        return valueFromSource
             .orElseGet(() -> scannerPropertySource.promptForString(property.getPath()));
     }
 
@@ -77,10 +84,33 @@ public class FileUtilConfiguration {
             .orElseGet(() -> Paths.get(scannerPropertySource.promptForString(property.getPath())));
     }
 
-    // todo: Show possible values to the user if prompting him
     public <E extends Enum<E>> E getEnumOrPrompt(FuOptionalEnumProperty<E> property) {
-        return fromOverridingSourceOrSettingsManager(property, str -> Optional.of(property.toEnumEntry(str)))
+        return getEnumOrPrompt(property, false);
+    }
+
+    // todo: Show possible values to the user if prompting him
+    public <E extends Enum<E>> E getEnumOrPrompt(FuOptionalEnumProperty<E> property, boolean forcePrompt) {
+        Optional<E> valueFromSource = forcePrompt
+            ? Optional.empty()
+            : fromOverridingSourceOrSettingsManager(property, str -> Optional.of(property.toEnumEntry(str)));
+        return valueFromSource
             .orElseGet(() -> property.toEnumEntry(scannerPropertySource.promptForString(property.getPath())));
+    }
+
+    public String promptString(StringProperty property) {
+        return scannerPropertySource.promptForString(property.getPath());
+    }
+
+    public boolean promptBoolean(FuBooleanProperty property) {
+        return Boolean.parseBoolean(scannerPropertySource.promptForString(property.getPath()));
+    }
+
+    public double promptDouble(FuDoubleProperty property) {
+        return Double.parseDouble(scannerPropertySource.promptForString(property.getPath()));
+    }
+
+    public int promptInteger(FuIntegerProperty property) {
+        return Integer.parseInt(scannerPropertySource.promptForString(property.getPath()));
     }
 
     @Nullable
