@@ -161,6 +161,12 @@ public class FileUtilSettings implements SettingsHolder {
     public static final FuDoubleProperty TREE_FILE_MAX_SIZE_MB =
         new FuDoubleProperty("tree.filter.maxSizeInMb", -1.0);
 
+    public static final FuIntegerProperty TREE_MIN_ITEMS_IN_FOLDER =
+        new FuIntegerProperty("tree.filter.minItemsInDir", -1);
+
+    public static final FuIntegerProperty TREE_MAX_ITEMS_IN_FOLDER =
+        new FuIntegerProperty("tree.filter.maxItemsInDir", -1);
+
     public static final FuBooleanProperty TREE_INDENT_ELEMENTS =
         new FuBooleanProperty("tree.output.indentElements", true);
     public static final FuBooleanProperty TREE_SHOW_ABSOLUTE_PATH =

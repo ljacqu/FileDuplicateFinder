@@ -1,7 +1,5 @@
 package ch.jalu.fileduplicatefinder.tree;
 
-import ch.jalu.fileduplicatefinder.utils.PathUtils;
-
 import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +13,8 @@ public class TreeParameters {
     private @Nullable Pattern directoryPattern;
     private @Nullable Long minSizeBytes;
     private @Nullable Long maxSizeBytes;
+    private @Nullable Integer minItemsInDir;
+    private @Nullable Integer maxItemsInDir;
 
     private boolean showAbsolutePath;
     private boolean indentElements;
@@ -36,13 +36,26 @@ public class TreeParameters {
         return true;
     }
 
-    public boolean matchesSizeFilters(Path path) {
+    public boolean matchesSizeFilters(FileTreeEntry entry) {
         if (minSizeBytes != null || maxSizeBytes != null) {
-            if (!Files.isRegularFile(path)) {
+            if (!Files.isRegularFile(entry.getPath())) {
                 return false;
             }
-            long size = PathUtils.size(path);
+            long size = entry.getSize();
             return (minSizeBytes == null || size >= minSizeBytes) && (maxSizeBytes == null || size <= maxSizeBytes);
+        }
+        return true;
+    }
+
+    public boolean matchesItemsInDirFilters(FileTreeEntry entry) {
+        if (minItemsInDir != null || maxItemsInDir != null) {
+            if (!Files.isDirectory(entry.getPath())) {
+                return false;
+            }
+
+            int numberOfChildren = entry.getChildren().size();
+            return (minItemsInDir == null || numberOfChildren >= minItemsInDir)
+                && (maxItemsInDir == null || numberOfChildren <= maxItemsInDir);
         }
         return true;
     }
@@ -105,5 +118,13 @@ public class TreeParameters {
 
     public void setMaxSizeBytes(@Nullable Long maxSizeBytes) {
         this.maxSizeBytes = maxSizeBytes;
+    }
+
+    public void setMinItemsInDir(@Nullable Integer minItemsInDir) {
+        this.minItemsInDir = minItemsInDir;
+    }
+
+    public void setMaxItemsInDir(@Nullable Integer maxItemsInDir) {
+        this.maxItemsInDir = maxItemsInDir;
     }
 }

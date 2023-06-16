@@ -4,6 +4,7 @@ import ch.jalu.configme.properties.Property;
 import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
 import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
@@ -66,7 +67,9 @@ public class FileTreeRunner {
 
         Path path = entry.getPath();
         String relativeName = collector.getNameRelativeToRoot(path);
-        boolean isMatch = params.matchesRegexFilters(path, relativeName) && params.matchesSizeFilters(path);
+        boolean isMatch = params.matchesRegexFilters(path, relativeName)
+            && params.matchesSizeFilters(entry)
+            && params.matchesItemsInDirFilters(entry);
 
         boolean hasRelevantChild = false;
         for (FileTreeEntry child : entry.getChildren()) {
@@ -111,6 +114,9 @@ public class FileTreeRunner {
         parameters.setDirectoryPattern(getConfiguredPatternOrNull(TREE_DIRECTORY_REGEX));
         parameters.setMinSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MIN_SIZE_MB));
         parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MAX_SIZE_MB));
+        parameters.setMinItemsInDir(getConfiguredIntOrNullIfNegative(FileUtilSettings.TREE_MIN_ITEMS_IN_FOLDER));
+        parameters.setMaxItemsInDir(getConfiguredIntOrNullIfNegative(FileUtilSettings.TREE_MAX_ITEMS_IN_FOLDER));
+        parameters.setMaxSizeBytes(getConfiguredNumberOfBytesOrNull(FileUtilSettings.TREE_FILE_MAX_SIZE_MB));
         parameters.setFormatFileSize(configuration.getBoolean(FileUtilSettings.FORMAT_FILE_SIZE));
         parameters.setIndentElements(configuration.getBoolean(FileUtilSettings.TREE_INDENT_ELEMENTS));
         parameters.setShowAbsolutePath(configuration.getBoolean(FileUtilSettings.TREE_SHOW_ABSOLUTE_PATH));
@@ -124,6 +130,12 @@ public class FileTreeRunner {
             return null;
         }
         return FileSizeUtils.megaBytesToBytes(megabytes);
+    }
+
+    @Nullable
+    private Integer getConfiguredIntOrNullIfNegative(FuIntegerProperty intProperty) {
+        int value = configuration.getInt(intProperty);
+        return value < 0 ? null : value;
     }
 
     @Nullable
