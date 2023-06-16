@@ -38,12 +38,22 @@ public class PropertyFileResource implements PropertyResource {
         return new PropertyFileReader(configFile);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @implNote
+     *   Comments on intermediate paths (like {@code com.acme} for a property {@code com.acme.filter.name}) is not
+     *   picked up by this resource implementation. Only comments on properties and their top-level parents
+     *   (like {@code com}) will be considered by this class when writing.
+     *
+     * @param configurationData the configuration data to export
+     */
     @Override
     public void exportProperties(ConfigurationData configurationData) {
-        String lastParent = null;
         try (OutputStream os = Files.newOutputStream(configFile);
              OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
             writeComments(writer, "", configurationData, true);
+            String lastParent = "";
 
             for (Property<?> property : configurationData.getProperties()) {
                 String export = getExportValue(property, configurationData);
@@ -53,8 +63,8 @@ public class PropertyFileResource implements PropertyResource {
 
                 String parentElem = extractParentElement(property.getPath());
 
-                if (!Objects.equals(lastParent, parentElem)) {
-                    if (lastParent != null) {
+                if (!Objects.equals(lastParent, parentElem) && !property.getPath().equals(parentElem)) {
+                    if (!lastParent.isEmpty()) {
                         writer.append('\n');
                     }
                     writeComments(writer, parentElem, configurationData, true);
