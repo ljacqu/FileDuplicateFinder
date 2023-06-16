@@ -15,13 +15,4 @@ public final class TestUtils {
             throw new IllegalStateException(e);
         }
     }
-
-    public static Path getConfigSampleFile() {
-        try {
-            return Paths.get(TestUtils.class.getClassLoader().getResource("configuration/test-config.properties")
-                .toURI());
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
 }
