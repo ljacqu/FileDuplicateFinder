@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.configme;
+package ch.jalu.fileduplicatefinder.config;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

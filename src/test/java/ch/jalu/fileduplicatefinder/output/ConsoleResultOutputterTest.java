@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 import com.google.common.collect.ImmutableMap;
@@ -15,8 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;

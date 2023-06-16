@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
 import org.junit.jupiter.api.Test;
@@ -8,12 +8,12 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;

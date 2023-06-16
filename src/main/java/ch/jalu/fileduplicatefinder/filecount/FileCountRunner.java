@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.filecount;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -10,9 +10,9 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FILE_COUNT_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FILE_COUNT_GROUPS;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FORMAT_FILE_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FILE_COUNT_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FILE_COUNT_GROUPS;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FORMAT_FILE_SIZE;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;

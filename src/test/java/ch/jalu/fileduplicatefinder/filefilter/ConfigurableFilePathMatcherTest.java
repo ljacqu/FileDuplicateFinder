@@ -1,7 +1,7 @@
 package ch.jalu.fileduplicatefinder.filefilter;
 
 import ch.jalu.fileduplicatefinder.TestUtils;
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,11 +14,11 @@ import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_MAX_SIZE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_MIN_SIZE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MAX_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.BDDMockito.given;

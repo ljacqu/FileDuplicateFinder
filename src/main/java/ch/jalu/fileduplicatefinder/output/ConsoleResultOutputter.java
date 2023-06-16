@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.output;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
 
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_DUPLICATES;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 
 /**

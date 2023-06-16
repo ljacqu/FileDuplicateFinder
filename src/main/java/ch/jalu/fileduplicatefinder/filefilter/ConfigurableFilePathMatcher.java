@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.filefilter;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
 import javax.annotation.Nullable;
@@ -10,11 +10,11 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.Collection;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_MAX_SIZE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_MIN_SIZE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MAX_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
 import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 

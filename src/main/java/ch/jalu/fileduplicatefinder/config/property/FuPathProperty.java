@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.configme.property;
+package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.BaseProperty;
 import ch.jalu.configme.properties.OptionalProperty;

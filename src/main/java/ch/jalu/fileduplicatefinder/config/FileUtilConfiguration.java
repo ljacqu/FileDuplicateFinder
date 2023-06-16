@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.configme;
+package ch.jalu.fileduplicatefinder.config;
 
 import ch.jalu.configme.SettingsManager;
 import ch.jalu.configme.SettingsManagerBuilder;
@@ -6,11 +6,11 @@ import ch.jalu.configme.properties.Property;
 import ch.jalu.configme.properties.RegexProperty;
 import ch.jalu.configme.properties.StringProperty;
 import ch.jalu.configme.utils.Utils;
-import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuOptionalEnumProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuOptionalEnumProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuPowerOfTwoMinusOneProperty;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;

@@ -1,6 +1,6 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
@@ -13,10 +13,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_DISTRIBUTION;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_DISTRIBUTION;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT;
 
 public class FileDuplicateRunner {
 

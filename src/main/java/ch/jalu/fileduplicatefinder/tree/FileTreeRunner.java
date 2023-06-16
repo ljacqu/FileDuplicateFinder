@@ -1,10 +1,10 @@
 package ch.jalu.fileduplicatefinder.tree;
 
 import ch.jalu.configme.properties.Property;
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
 import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import com.google.common.base.CharMatcher;
@@ -24,18 +24,18 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.FORMAT_FILE_SIZE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_DIRECTORY_REGEX;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_DISPLAY_MODE;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILES_PROCESSED_INTERVAL;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_MAX_SIZE_MB;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_MIN_SIZE_MB;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FILE_REGEX;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_INDENT_ELEMENTS;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_MAX_ITEMS_IN_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_MIN_ITEMS_IN_FOLDER;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.TREE_SHOW_ABSOLUTE_PATH;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FORMAT_FILE_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_DIRECTORY_REGEX;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_DISPLAY_MODE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_FILES_PROCESSED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_FILE_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_FILE_MIN_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_FILE_REGEX;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_INDENT_ELEMENTS;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_MAX_ITEMS_IN_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_MIN_ITEMS_IN_FOLDER;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_SHOW_ABSOLUTE_PATH;
 
 /**
  * Outputs a file tree with configurable filters.

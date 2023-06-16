@@ -1,7 +1,7 @@
 package ch.jalu.fileduplicatefinder;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilSettings;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FileDuplicateRunner;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPairDuplicatesCounter;
 import ch.jalu.fileduplicatefinder.filecount.FileCountRunner;

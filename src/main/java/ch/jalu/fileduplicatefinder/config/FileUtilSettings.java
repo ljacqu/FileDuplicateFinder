@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.configme;
+package ch.jalu.fileduplicatefinder.config;
 
 import ch.jalu.configme.Comment;
 import ch.jalu.configme.SettingsHolder;
@@ -6,11 +6,11 @@ import ch.jalu.configme.configurationdata.CommentsConfiguration;
 import ch.jalu.configme.properties.Property;
 import ch.jalu.configme.properties.RegexProperty;
 import ch.jalu.configme.properties.StringProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuBooleanProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuDoubleProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuIntegerProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuOptionalEnumProperty;
-import ch.jalu.fileduplicatefinder.configme.property.FuPowerOfTwoMinusOneProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuBooleanProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuDoubleProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuIntegerProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuOptionalEnumProperty;
+import ch.jalu.fileduplicatefinder.config.property.FuPowerOfTwoMinusOneProperty;
 import ch.jalu.fileduplicatefinder.tree.TreeDisplayMode;
 
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import static ch.jalu.configme.properties.PropertyInitializer.newRegexProperty;
 import static ch.jalu.configme.properties.PropertyInitializer.optionalStringProperty;
-import static ch.jalu.fileduplicatefinder.configme.property.FuPathProperty.newOptionalPathProperty;
+import static ch.jalu.fileduplicatefinder.config.property.FuPathProperty.newOptionalPathProperty;
 
 /**
  * Defines all properties for the file utils.

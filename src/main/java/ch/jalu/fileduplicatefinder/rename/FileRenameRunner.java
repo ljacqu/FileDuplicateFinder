@@ -1,7 +1,7 @@
 package ch.jalu.fileduplicatefinder.rename;
 
-import ch.jalu.fileduplicatefinder.configme.FileUtilConfiguration;
-import ch.jalu.fileduplicatefinder.configme.FileUtilSettings;
+import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.config.FileUtilSettings;
 
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_DATE_DATE_FORMAT;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_DATE_TO;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_REGEX_FROM;
-import static ch.jalu.fileduplicatefinder.configme.FileUtilSettings.RENAME_REGEX_TO;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.RENAME_DATE_DATE_FORMAT;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.RENAME_DATE_TO;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.RENAME_REGEX_FROM;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.RENAME_REGEX_TO;
 
 public class FileRenameRunner {
 

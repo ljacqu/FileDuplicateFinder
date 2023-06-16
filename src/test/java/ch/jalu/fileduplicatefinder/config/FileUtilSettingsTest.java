@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.configme;
+package ch.jalu.fileduplicatefinder.config;
 
 import ch.jalu.configme.SettingsHolder;
 import ch.jalu.configme.configurationdata.ConfigurationData;
