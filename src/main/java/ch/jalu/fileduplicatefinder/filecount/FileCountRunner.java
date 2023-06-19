@@ -22,7 +22,6 @@ import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FILE_COUNT_FOL
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FILE_COUNT_GROUPS;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FORMAT_FILE_SIZE;
 import static ch.jalu.fileduplicatefinder.filecount.FileCounter.NO_EXTENSION_TEXT;
-import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReadableSize;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 
@@ -236,10 +235,7 @@ public class FileCountRunner {
         boolean formatSize = configuration.getValue(FORMAT_FILE_SIZE);
 
         for (FileExtensionCount extension : extensions) {
-            String size = formatSize
-                ? FileSizeUtils.formatToHumanReadableSize(extension.getTotalSizeInBytes().longValue())
-                : extension.getTotalSizeInBytes().toPlainString();
-            System.out.println(" * " + extension.getExtension() + ": " + extension.getCount() + " (" + size + ")");
+            System.out.println(" * " + formatEntry(extension.getExtension(), extension, formatSize));
         }
     }
 
@@ -316,27 +312,25 @@ public class FileCountRunner {
 
         boolean formatFileSize = configuration.getValue(FORMAT_FILE_SIZE);
         boolean includeGroupDetails = configuration.getValue(FILE_COUNT_DETAILED_GROUPS);
+        FileCountTotalEntry totalEntry = new FileCountTotalEntry();
 
         stats.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(comparator))
             .forEach(entry -> {
-                String fileSize = formatFileSize
-                    ? formatToHumanReadableSize(entry.getValue().getTotalSizeInBytes().longValue())
-                    : String.valueOf(entry.getValue().getTotalSizeInBytes());
-                System.out.println(entry.getKey() + ": " + entry.getValue().getCount() + " (" + fileSize + ")");
+                System.out.println(formatEntry(entry.getKey(), entry.getValue(), formatFileSize));
+                totalEntry.add(entry.getValue());
+
                 if (includeGroupDetails && entry.getValue() instanceof FileGroupCount) {
                     FileGroupCount group = (FileGroupCount) entry.getValue();
                     group.getExtensions().stream()
                         .sorted(comparator)
                         .forEach(ext -> {
-                            String extSize = formatFileSize
-                                ? formatToHumanReadableSize(ext.getTotalSizeInBytes().longValue())
-                                : String.valueOf(ext.getTotalSizeInBytes());
-                            System.out.println(" * " + ext.getExtension() + ": "
-                                + ext.getCount() + " (" + extSize + ")");
+                            System.out.println(" * " + formatEntry(ext.getExtension(), ext, formatFileSize));
                         });
                 }
             });
+        System.out.println();
+        System.out.println(formatEntry("Total", totalEntry, formatFileSize));
     }
 
     private static <V extends Comparable<V>> Comparator<FileCountEntry> createComparator(
@@ -344,6 +338,13 @@ public class FileCountRunner {
                                                                                    boolean isDescending) {
         Comparator<FileCountEntry> comparator = Comparator.comparing(getter);
         return isDescending ? comparator.reversed() : comparator;
+    }
+
+    private String formatEntry(String designation, FileCountEntry entry, boolean formatSize) {
+        String size = formatSize
+            ? FileSizeUtils.formatToHumanReadableSize(entry.getTotalSizeInBytes().longValue())
+            : entry.getTotalSizeInBytes().toPlainString();
+        return designation + ": " + entry.getCount() + " (" + size + ")";
     }
 
     private void outputHelp() {
