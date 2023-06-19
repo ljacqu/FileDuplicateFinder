@@ -91,6 +91,11 @@ public class TreeParameters {
 
     // Getters and setters
 
+
+    public TreeDisplayMode getDisplayMode() {
+        return displayMode;
+    }
+
     public void setDisplayMode(TreeDisplayMode displayMode) {
         this.displayMode = displayMode;
     }

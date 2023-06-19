@@ -12,14 +12,16 @@ import com.google.common.base.Strings;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.FORMAT_FILE_SIZE;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.TREE_DIRECTORY_REGEX;
@@ -89,10 +91,10 @@ public class FileTreeRunner {
                     if (!previousTaskWasHelp || "help".equals(task)) { // Always show 'help' if explicitly requested
                         System.out.println();
                         System.out.println("- Type 'dump' to dump the results to a file");
-                        System.out.println("- Type 'exit' to stop");
                         System.out.println("- Type 'config' to reconfigure all parameters");
-                        System.out.println("- Type 'size' to view files sorted by size");
                         System.out.println("- Type 'debug' to debug the parameters");
+                        System.out.println("- Type 'help' to see this help");
+                        System.out.println("- Type 'exit' to stop");
                     }
                     currentTaskIsHelp = true;
             }
@@ -123,12 +125,12 @@ public class FileTreeRunner {
 
     private List<FileTreeEntry> filterRelevantEntries(FileTreeEntry root, TreeParameters params,
                                                       boolean printDebug) {
-        RelevantFileEntryCollector collector = new RelevantFileEntryCollector(root, params.isSortBySize(), printDebug);
+        RelevantFileEntryCollector collector = new RelevantFileEntryCollector(root, printDebug);
 
         for (FileTreeEntry child : root.getChildren()) {
             addEntryAndChildrenToListIfRelevantRecursively(collector, child, params);
         }
-        return collector.getRelevantEntriesSorted();
+        return collector.getRelevantEntriesSorted(params);
     }
 
     private boolean addEntryAndChildrenToListIfRelevantRecursively(RelevantFileEntryCollector collector,
@@ -205,7 +207,8 @@ public class FileTreeRunner {
         parameters.setDisplayMode(configuration.getValue(TREE_OUTPUT_ELEMENT_TYPES, forcePrompt));
         parameters.setSortBySize(configuration.getValue(TREE_SORT_FILES_BY_SIZE, forcePrompt));
         parameters.setFormatFileSize(configuration.getValue(FORMAT_FILE_SIZE, forcePrompt));
-        if (!parameters.isSortBySize()) {
+
+        if (!parameters.isSortBySize() || parameters.getDisplayMode() == TreeDisplayMode.ALL) {
             parameters.setIndentElements(configuration.getValue(TREE_INDENT_ELEMENTS, forcePrompt));
         }
         parameters.setShowAbsolutePath(configuration.getValue(TREE_SHOW_ABSOLUTE_PATH, forcePrompt));
@@ -241,22 +244,19 @@ public class FileTreeRunner {
     private static final class RelevantFileEntryCollector {
 
         private final Path root;
-        private final boolean sortBySize;
         private final boolean isDebug;
-        private final Map<FileTreeEntry, Integer> orderByEntry = new HashMap<>();
-        private final List<FileTreeEntry> relevantEntries = new ArrayList<>();
+        private final Map<Path, Integer> orderByEntry = new HashMap<>();
+        private final Set<FileTreeEntry> relevantEntries = new HashSet<>();
         private int currentPosition = 0;
 
         /**
          * Constructor. Registers and adds the given entry as a relevant entry (the root is always deemed relevant).
          *
          * @param rootEntry the root entry
-         * @param sortBySize whether the output should be sorted by size
          * @param isDebug defines whether we should log debug output
          */
-        RelevantFileEntryCollector(FileTreeEntry rootEntry, boolean sortBySize, boolean isDebug) {
+        RelevantFileEntryCollector(FileTreeEntry rootEntry, boolean isDebug) {
             this.root = rootEntry.getPath();
-            this.sortBySize = sortBySize;
             this.isDebug = isDebug;
             registerEntry(rootEntry);
             addRelevantEntry(rootEntry);
@@ -272,7 +272,7 @@ public class FileTreeRunner {
          * @param entry the entry to register
          */
         void registerEntry(FileTreeEntry entry) {
-            orderByEntry.put(entry, currentPosition);
+            orderByEntry.put(entry.getPath(), currentPosition);
             ++currentPosition;
         }
 
@@ -298,16 +298,48 @@ public class FileTreeRunner {
         /**
          * Returns all relevant entries by original encounter order.
          *
+         * @param params tree parameters to sort by
          * @return relevant entries (sorted)
          */
-        List<FileTreeEntry> getRelevantEntriesSorted() {
-            Comparator<FileTreeEntry> treeEntryComparator = sortBySize
+        List<FileTreeEntry> getRelevantEntriesSorted(TreeParameters params) {
+            if (params.isSortBySize() && params.getDisplayMode() == TreeDisplayMode.ALL) {
+                return sortByHierarchyAndSize();
+            }
+
+            Comparator<FileTreeEntry> treeEntryComparator = params.isSortBySize()
                 ? Comparator.comparing(FileTreeEntry::getSize)
-                : Comparator.comparing(orderByEntry::get);
+                : Comparator.comparing(entry -> orderByEntry.get(entry.getPath()));
 
             return relevantEntries.stream()
                 .sorted(treeEntryComparator)
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
+        }
+
+        List<FileTreeEntry> sortByHierarchyAndSize() {
+            FileTreeEntry rootEntry = findRootTreeEntry();
+            return streamThroughEntryAndChildrenSortedBySize(rootEntry)
+                .collect(Collectors.toUnmodifiableList());
+        }
+
+        private Stream<FileTreeEntry> streamThroughEntryAndChildrenSortedBySize(FileTreeEntry parent) {
+            Stream<FileTreeEntry> selfStream = Stream.of(parent);
+
+            Stream<FileTreeEntry> relevantSortedChildren = parent.getChildren().stream()
+                .filter(relevantEntries::contains)
+                .sorted(Comparator.comparing(FileTreeEntry::getSize))
+                .flatMap(this::streamThroughEntryAndChildrenSortedBySize);
+
+            return Stream.concat(selfStream, relevantSortedChildren);
+        }
+
+        private FileTreeEntry findRootTreeEntry() {
+            for (FileTreeEntry entry : relevantEntries) {
+                if (entry.getPath().equals(root)) {
+                    return entry;
+                }
+            }
+
+            throw new IllegalStateException("Could not find root entry");
         }
     }
 }
