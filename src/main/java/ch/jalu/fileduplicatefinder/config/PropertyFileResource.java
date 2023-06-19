@@ -42,7 +42,7 @@ public class PropertyFileResource implements PropertyResource {
      * {@inheritDoc}
      *
      * @implNote
-     *   Comments on intermediate paths (like {@code com.acme} for a property {@code com.acme.filter.name}) is not
+     *   Comments on intermediate paths (like {@code com.acme} for a property {@code com.acme.filter}) is not
      *   picked up by this resource implementation. Only comments on properties and their top-level parents
      *   (like {@code com}) will be considered by this class when writing.
      *
