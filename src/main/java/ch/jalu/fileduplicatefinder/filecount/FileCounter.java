@@ -12,31 +12,28 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class FileCounter {
 
+    public static final String NO_EXTENSION_TEXT = "File";
+
     private final Path folder;
 
     public FileCounter(Path folder) {
         this.folder = checkNotNull(folder);
     }
 
-    public Map<String, FileGroupStatistics> gatherExtensionCount() {
-        Map<String, FileGroupStatistics> countByExtension = new HashMap<>();
+    public Map<String, FileCountEntry> gatherExtensionCount() {
+        Map<String, FileExtensionCount> countByExtension = new HashMap<>();
         countExtensions(folder, countByExtension);
-        return countByExtension;
+        return (Map) countByExtension;
     }
 
-    private void countExtensions(Path folder, Map<String, FileGroupStatistics> countByExtension) {
+    private void countExtensions(Path folder, Map<String, FileExtensionCount> countByExtension) {
         PathUtils.list(folder).forEach(element -> {
             if (Files.isDirectory(element)) {
                 countExtensions(element, countByExtension);
             } else if (Files.isRegularFile(element)) {
                 String extension = getExtension(element);
-                FileGroupStatistics statistics = countByExtension.get(extension);
-                if (statistics == null) {
-                    countByExtension.put(extension, new FileGroupStatistics(element));
-                } else {
-                    statistics.add(element);
-                }
-
+                FileExtensionCount count = countByExtension.computeIfAbsent(extension, FileExtensionCount::new);
+                count.add(element);
             }
         });
     }

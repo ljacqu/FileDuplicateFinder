@@ -157,6 +157,10 @@ public final class FileUtilSettings implements SettingsHolder {
     })
     public static final JfuStringProperty FILE_COUNT_GROUPS = new JfuStringProperty("fileCount.groups", "");
 
+    @Comment("Output the individual stats of extensions that have been grouped?")
+    public static final JfuBooleanProperty FILE_COUNT_DETAILED_GROUPS =
+        new JfuBooleanProperty("fileCount.output.includeGroupDetails", false);
+
     // --- Folder diff feature ---
 
     @Comment("The first folder to consider")
