@@ -2,6 +2,7 @@ package ch.jalu.fileduplicatefinder.folderdiff;
 
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_FILES_PROCESSED_INTERVAL;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_FOLDER1;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_FOLDER2;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_USE_SMART_FOLDER_PREFIXES;
@@ -35,8 +37,9 @@ public class FolderDiffRunner {
         Path folder1 = configuration.getValueOrPrompt(DIFF_FOLDER1);
         Path folder2 = configuration.getValueOrPrompt(DIFF_FOLDER2);
 
+        int notificationInterval = configuration.getValue(DIFF_FILES_PROCESSED_INTERVAL);
         List<FileDifference> differences = new FolderDiffAnalyzer(folder1, folder2, configuration, fileHasherFactory)
-            .collectDifferences(new ProgressUpdater());
+            .collectDifferences(new ProgressUpdater(notificationInterval));
 
         System.out.println();
         System.out.println();
@@ -157,14 +160,22 @@ public class FolderDiffRunner {
      */
     private static final class ProgressUpdater implements FolderDiffProgressCallback {
 
+        private final ConsoleProgressListener scanProgressListener;
+        private final ConsoleProgressListener analysisProgressListener;
+
+        ProgressUpdater(int notificationInterval) {
+            this.scanProgressListener = new ConsoleProgressListener(notificationInterval);
+            this.analysisProgressListener = new ConsoleProgressListener(notificationInterval);
+        }
+
         @Override
         public void startScan() {
             System.out.print("Scanning files:  ");
         }
 
         @Override
-        public void notifyScanProgress(int numberOfFoundFiles) {
-            System.out.print(". ");
+        public void notifyScanProgress() {
+            scanProgressListener.notifyItemProcessed();
         }
 
         @Override
@@ -174,8 +185,8 @@ public class FolderDiffRunner {
         }
 
         @Override
-        public void notifyAnalysisProgress(int numberOfHandledFiles) {
-            System.out.print(". ");
+        public void notifyAnalysisProgress() {
+            analysisProgressListener.notifyItemProcessed();
         }
     }
 }

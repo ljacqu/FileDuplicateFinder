@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE;
-import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DIFF_FILES_PROCESSED_INTERVAL;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_HASH_ALGORITHM;
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_HASH_MAX_SIZE_MB;
 
@@ -64,8 +63,7 @@ public class FolderDiffAnalyzer {
         maxSizeBytesForHashing = FileSizeUtils.megaBytesToBytes(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB));
         checkSizeAndModificationDate = configuration.getValue(DIFF_CHECK_BY_SIZE_AND_MODIFICATION_DATE);
 
-        int progressIncrements = configuration.getValue(DIFF_FILES_PROCESSED_INTERVAL);
-        ProgressHandler progressHandler = new ProgressHandler(progressCallback, progressIncrements);
+        ProgressHandler progressHandler = new ProgressHandler(progressCallback);
         progressCallback.startScan();
         LinkedHashMap<String, FileElement> folder1ElementsByRelPath = new LinkedHashMap<>();
         process(folder1, folder1, folder1ElementsByRelPath, progressHandler);
@@ -164,31 +162,22 @@ public class FolderDiffAnalyzer {
     private static final class ProgressHandler {
 
         private final FolderDiffProgressCallback folderDiffProgressCallback;
-        private final int notificationStep;
-        private int scanProgress;
-        private int analysisProgress;
 
         /**
          * Constructor.
          *
          * @param folderDiffProgressCallback progress callback to use
-         * @param notificationStep steps (power of 2 minus one) in which the callback should be notified
          */
-        ProgressHandler(FolderDiffProgressCallback folderDiffProgressCallback, int notificationStep) {
+        ProgressHandler(FolderDiffProgressCallback folderDiffProgressCallback) {
             this.folderDiffProgressCallback = folderDiffProgressCallback;
-            this.notificationStep = notificationStep;
         }
 
         void incrementScannedFiles() {
-            if ((++scanProgress & notificationStep) == notificationStep) {
-                folderDiffProgressCallback.notifyScanProgress(scanProgress);
-            }
+            folderDiffProgressCallback.notifyScanProgress();
         }
 
         void incrementAnalyzedFiles() {
-            if ((++analysisProgress & notificationStep) == notificationStep) {
-                folderDiffProgressCallback.notifyAnalysisProgress(analysisProgress);
-            }
+            folderDiffProgressCallback.notifyAnalysisProgress();
         }
     }
 }

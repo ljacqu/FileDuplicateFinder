@@ -11,11 +11,9 @@ interface FolderDiffProgressCallback {
     void startScan();
 
     /**
-     * Called per the configured progress iteration when a certain number of files has been found.
-     *
-     * @param numberOfFoundFiles the number of found files
+     * Called whenever a file has been found.
      */
-    void notifyScanProgress(int numberOfFoundFiles);
+    void notifyScanProgress();
 
     /**
      * Called when all files have been collected and the comparison of files will proceed.
@@ -23,10 +21,8 @@ interface FolderDiffProgressCallback {
     void startAnalysis();
 
     /**
-     * Called per the configured progress iteration when a certain number of files have been processed.
-     *
-     * @param numberOfHandledFiles the number of files that were compared
+     * Called for every file after it has been hashed.
      */
-    void notifyAnalysisProgress(int numberOfHandledFiles);
+    void notifyAnalysisProgress();
 
 }
