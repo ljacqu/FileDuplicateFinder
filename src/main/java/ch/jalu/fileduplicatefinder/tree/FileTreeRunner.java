@@ -100,6 +100,7 @@ public class FileTreeRunner {
             }
             previousTaskWasHelp = currentTaskIsHelp;
 
+            System.out.print("Command: ");
             task = scanner.nextLine();
         } while (!task.equals("exit"));
     }
