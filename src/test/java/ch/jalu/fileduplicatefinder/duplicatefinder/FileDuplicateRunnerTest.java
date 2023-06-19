@@ -3,7 +3,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
-import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
+import ch.jalu.fileduplicatefinder.duplicatefinder.output.DuplicateEntryOutputter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

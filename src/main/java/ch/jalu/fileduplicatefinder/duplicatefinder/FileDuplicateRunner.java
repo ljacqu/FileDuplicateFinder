@@ -6,7 +6,7 @@ import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
-import ch.jalu.fileduplicatefinder.output.DuplicateEntryOutputter;
+import ch.jalu.fileduplicatefinder.duplicatefinder.output.DuplicateEntryOutputter;
 import com.google.common.base.Preconditions;
 
 import java.nio.file.Files;
