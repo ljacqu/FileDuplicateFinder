@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 
 public class TreeParameters {
 
-    private TreeDisplayMode displayMode;
-
     private @Nullable Pattern filePattern;
     private @Nullable Pattern directoryPattern;
     private @Nullable Long minSizeBytes;
@@ -16,6 +14,8 @@ public class TreeParameters {
     private @Nullable Integer minItemsInDir;
     private @Nullable Integer maxItemsInDir;
 
+    private TreeDisplayMode displayMode;
+    private boolean sortBySize;
     private boolean showAbsolutePath;
     private boolean indentElements;
     private boolean formatFileSize;
@@ -141,5 +141,13 @@ public class TreeParameters {
 
     public void setMaxItemsInDir(@Nullable Integer maxItemsInDir) {
         this.maxItemsInDir = maxItemsInDir;
+    }
+
+    public boolean isSortBySize() {
+        return sortBySize;
+    }
+
+    public void setSortBySize(boolean sortBySize) {
+        this.sortBySize = sortBySize;
     }
 }

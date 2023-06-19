@@ -188,10 +188,6 @@ public final class FileUtilSettings implements SettingsHolder {
     @Comment("The folder whose contents should be listed")
     public static final JfuOptionalProperty<Path> TREE_FOLDER = newOptionalDirectoryProperty("tree.folder");
 
-    @Comment("The element types to show in the output. (Possible values: ALL, DIRECTORIES, FILES)")
-    public static final JfuEnumProperty<TreeDisplayMode> TREE_DISPLAY_MODE =
-        new JfuEnumProperty<>(TreeDisplayMode.class, "tree.displayMode", TreeDisplayMode.ALL);
-
     @Comment({
         "Regex a file name must match to be included in the tree output. Empty to disable.",
         "The file name is given relative to the folder, e.g. if C:/acme/test is the folder to list, then a file at",
@@ -226,7 +222,15 @@ public final class FileUtilSettings implements SettingsHolder {
     public static final JfuIntegerProperty TREE_MAX_ITEMS_IN_FOLDER =
         new JfuIntegerProperty("tree.filter.maxItemsInDir", -1);
 
-    @Comment("Indent the output by level as to represent a tree.")
+    @Comment("The element types to show in the output. (Possible values: ALL, DIRECTORIES, FILES)")
+    public static final JfuEnumProperty<TreeDisplayMode> TREE_OUTPUT_ELEMENT_TYPES =
+        new JfuEnumProperty<>(TreeDisplayMode.class, "tree.output.elementTypes", TreeDisplayMode.ALL);
+
+    @Comment("Sort by file size (if false, sorting is done alphabetically)")
+    public static final JfuBooleanProperty TREE_SORT_FILES_BY_SIZE =
+        new JfuBooleanProperty("tree.output.sortBySize", false);
+
+    @Comment("Indent the output by level as to represent a tree. Not possible if sorting results by size.")
     public static final JfuBooleanProperty TREE_INDENT_ELEMENTS =
         new JfuBooleanProperty("tree.output.indentElements", true);
 
