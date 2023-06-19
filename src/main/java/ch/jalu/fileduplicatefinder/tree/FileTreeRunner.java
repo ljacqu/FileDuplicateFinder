@@ -67,7 +67,10 @@ public class FileTreeRunner {
         List<FileTreeEntry> relevantEntries = filterAndOutputRelevantEntries(treeRoot, params, totalItems);
 
         String task = "help";
+        boolean previousTaskWasHelp = false;
         do {
+            boolean currentTaskIsHelp = false;
+
             switch (task) {
                 case "dump":
                     throw new UnsupportedOperationException("Not yet implemented"); // TODO :)
@@ -83,12 +86,18 @@ public class FileTreeRunner {
                     break;
 
                 default:
-                    System.out.println("- Type 'dump' to dump the results to a file");
-                    System.out.println("- Type 'exit' to stop");
-                    System.out.println("- Type 'config' to reconfigure all parameters");
-                    System.out.println("- Type 'size' to view files sorted by size");
-                    System.out.println("- Type 'debug' to debug the parameters");
+                    if (!previousTaskWasHelp || "help".equals(task)) { // Always show 'help' if explicitly requested
+                        System.out.println();
+                        System.out.println("- Type 'dump' to dump the results to a file");
+                        System.out.println("- Type 'exit' to stop");
+                        System.out.println("- Type 'config' to reconfigure all parameters");
+                        System.out.println("- Type 'size' to view files sorted by size");
+                        System.out.println("- Type 'debug' to debug the parameters");
+                    }
+                    currentTaskIsHelp = true;
             }
+            previousTaskWasHelp = currentTaskIsHelp;
+
             task = scanner.nextLine();
         } while (!task.equals("exit"));
     }
