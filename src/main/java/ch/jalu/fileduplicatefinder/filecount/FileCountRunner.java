@@ -51,7 +51,7 @@ public class FileCountRunner {
             if (command.startsWith("sort ")) {
                 handleSortCommand(command, statsByExtension);
             } else if (command.startsWith("group ")) {
-                handleGroupCommand(command, statsByExtension);
+                handleGroupCommand(command, statsByExtension, false);
             } else if (command.startsWith("groups")) {
                 printGroupDefinitions(command, statsByExtension);
             } else if (command.startsWith("rmgroup ")) {
@@ -84,14 +84,15 @@ public class FileCountRunner {
         for (String groupDefinition : groupProperty.split(";")) {
             groupDefinition = groupDefinition.trim();
             if (pat.matcher(groupDefinition).matches()) {
-                handleGroupCommand("group " + groupDefinition, statsByExtension);
+                handleGroupCommand("group " + groupDefinition, statsByExtension, true);
             } else if (!groupDefinition.isEmpty()) {
                 System.err.println("Ignoring group definition '" + groupDefinition + "': invalid definition");
             }
         }
     }
 
-    private void handleGroupCommand(String groupCommand, Map<String, FileCountEntry> statsByExtension) {
+    private void handleGroupCommand(String groupCommand, Map<String, FileCountEntry> statsByExtension,
+                                    boolean ignoreMismatches) {
         String[] commandParts = groupCommand.split(" ");
         if (commandParts.length != 3) {
             System.err.println("Invalid group command! Expected something like 'group image .jpg,.jpeg,.png'");
@@ -106,14 +107,22 @@ public class FileCountRunner {
         if (group == null) {
             group = new FileGroupCount();
         }
+        int initialTotalExtensions = group.getExtensions().size();
 
         for (String extension : commandParts[2].split(",")) {
+            long oldCount = group.getCount();
             removeAndReturnExtensions(extension, statsByExtension)
                 .forEach(group::add);
             group.addDefinition(extension);
+
+            if (!ignoreMismatches && oldCount == group.getCount()) {
+                System.out.println(" Note: nothing matched the rule '" + extension + "'");
+            }
         }
 
-        if (statsByExtension.get(groupName) == null && group.getCount() > 0) {
+        if (initialTotalExtensions == group.getExtensions().size()) {
+            System.out.println("Nothing could be added to the group '" + groupName + "'");
+        } else if (initialTotalExtensions == 0) {
             statsByExtension.put(groupName, group);
             System.out.println("Created new group '" + groupName + "'");
         } else {

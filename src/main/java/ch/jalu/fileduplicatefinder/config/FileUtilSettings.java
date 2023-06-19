@@ -153,7 +153,8 @@ public final class FileUtilSettings implements SettingsHolder {
         "Groups extensions to be shown as only one entry, separate by semi-colon.",
         "Useful to get an overview by file type (not file _extension_) when there are a lot of results.",
         "You can configure groups on the fly after running the 'filecount' command.",
-        "Example: image .jpg,.png; text .txt,.html,.md; word .doc,.docx"
+        "Prepend a file extension with p: to use regex.",
+        "Example: image .jpg,.jpeg,.png,.gif; web .css,p:\\\\.x?html?,.js"
     })
     public static final JfuStringProperty FILE_COUNT_GROUPS = new JfuStringProperty("fileCount.groups", "");
 
