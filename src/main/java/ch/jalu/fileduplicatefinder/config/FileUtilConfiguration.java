@@ -54,6 +54,10 @@ public class FileUtilConfiguration {
         settingsManager.setProperty(property, value);
     }
 
+    public void save() {
+        settingsManager.save();
+    }
+
     private <T, R> R getValue0(JfuProperty<T> property, boolean forcePrompt, Function<T, R> resultTransformer) {
         // 1. Get existing value and output in case there is any error (this informs the user in case it was weird in
         //    the properties file or on the command line)

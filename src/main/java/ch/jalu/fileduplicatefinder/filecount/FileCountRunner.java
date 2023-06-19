@@ -60,6 +60,8 @@ public class FileCountRunner {
                 unrollGroups(statsByExtension);
             } else if (command.equals("details")) {
                 toggleDetails();
+            } else if (command.equals("saveconf")) {
+                saveConfiguration(statsByExtension);
             } else {
                 outputHelp();
             }
@@ -78,7 +80,7 @@ public class FileCountRunner {
             return;
         }
 
-        Pattern pat = Pattern.compile("\\w+ \\w+(,\\w+)*");
+        Pattern pat = Pattern.compile("\\w+ \\S+");
         for (String groupDefinition : groupProperty.split(";")) {
             groupDefinition = groupDefinition.trim();
             if (pat.matcher(groupDefinition).matches()) {
@@ -202,6 +204,23 @@ public class FileCountRunner {
         boolean newDetailsValue = !configuration.getValue(FILE_COUNT_DETAILED_GROUPS);
         configuration.setValue(FILE_COUNT_DETAILED_GROUPS, newDetailsValue);
         System.out.println("File extensions of groups are now " + (newDetailsValue ? "shown" : "hidden"));
+    }
+
+    private void saveConfiguration(Map<String, FileCountEntry> statsByExtension) {
+        List<Map.Entry<String, FileGroupCount>> groupEntries = statsByExtension.entrySet().stream()
+            .filter(entry -> entry.getValue() instanceof FileGroupCount)
+            .map(entry -> (Map.Entry<String, FileGroupCount>) (Map.Entry) entry)
+            .collect(Collectors.toList());
+        if (groupEntries.isEmpty()) {
+            System.err.println("There are no group entries to save");
+        } else {
+            String groupDefinitions = groupEntries.stream()
+                .map(grp -> grp.getKey() + " " + String.join(",", grp.getValue().getGroupDefinitions()))
+                .collect(Collectors.joining("; "));
+            configuration.setValue(FILE_COUNT_GROUPS, groupDefinitions);
+            configuration.save();
+            System.out.println("Saved group definitions to the file");
+        }
     }
 
     private void printGroupExtensions(List<FileExtensionCount> extensions) {
@@ -329,6 +348,8 @@ public class FileCountRunner {
         System.out.println("- Use 'groups' to view the definition of groups: groups [name]");
         System.out.println("  * Optionally, provide the group name to see details (e.g. 'groups images')");
         System.out.println("- Use 'details' to show/hide the file extensions of a group in the output");
+        System.out.println("- Use 'saveconf' to save the configurations (e.g. group definitions) "
+            + "to the configuration file");
         System.out.println("- Use 'rmgroup' to remove a group.");
         System.out.println("  * The extensions of the group will be restored as individual entries");
         System.out.println("- Use 'rmgroups' to delete ALL groups and restore the original extensions.");
