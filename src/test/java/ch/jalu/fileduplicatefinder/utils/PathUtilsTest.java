@@ -2,7 +2,9 @@ package ch.jalu.fileduplicatefinder.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -10,7 +12,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -92,9 +96,11 @@ class PathUtilsTest {
     }
 
     @Test
-    void shouldReturnLastModifiedTime() {
+    void shouldReturnLastModifiedTime() throws IOException {
         // given
         Path file = folder.resolve("test_4.csv");
+        ZonedDateTime date = ZonedDateTime.of(2022, 9, 4, 15, 13, 11, 0, ZoneId.systemDefault());
+        Files.setLastModifiedTime(file, FileTime.from(Instant.from(date)));
 
         // when
         FileTime lastModified = PathUtils.getLastModifiedTime(file);
