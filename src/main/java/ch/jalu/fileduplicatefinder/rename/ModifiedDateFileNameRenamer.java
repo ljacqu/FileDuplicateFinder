@@ -1,8 +1,8 @@
 package ch.jalu.fileduplicatefinder.rename;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
+import ch.jalu.fileduplicatefinder.utils.PathUtils;
+import com.google.common.io.MoreFiles;
+
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -33,8 +33,8 @@ public class ModifiedDateFileNameRenamer extends FileRenamer {
                 String newName = replacementPattern
                     .replace("{file}", filename)
                     .replace("{date}", formattedDate)
-                    .replace("{name}", com.google.common.io.Files.getNameWithoutExtension(filename))
-                    .replace("{ext}", com.google.common.io.Files.getFileExtension(filename));
+                    .replace("{name}", MoreFiles.getNameWithoutExtension(file))
+                    .replace("{ext}", MoreFiles.getFileExtension(file));
                 renamings.put(filename, newName);
             });
         return renamings;
@@ -46,11 +46,7 @@ public class ModifiedDateFileNameRenamer extends FileRenamer {
     }
 
     private static LocalDateTime getLastModifiedDate(Path file) {
-        try {
-            Instant instant = Files.getLastModifiedTime(file).toInstant();
-            return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to get last modified date for " + file, e);
-        }
+        Instant instant = PathUtils.getLastModifiedTime(file).toInstant();
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
 }
