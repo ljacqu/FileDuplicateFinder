@@ -3,18 +3,19 @@ package ch.jalu.fileduplicatefinder.filefilter;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
+import javax.annotation.Nullable;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.Collection;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_BLACKLIST;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_MAX_SIZE;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_MIN_SIZE;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_RESULT_WHITELIST;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_FILTER_WHITELIST;
-import static ch.jalu.fileduplicatefinder.utils.PathUtils.megaBytesToBytes;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_BLACKLIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MAX_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_RESULT_WHITELIST;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_FILTER_WHITELIST;
+import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.megaBytesToBytes;
 import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
 
 /**
@@ -22,18 +23,18 @@ import static ch.jalu.fileduplicatefinder.utils.PathUtils.negatePathMatcher;
  */
 public class ConfigurableFilePathMatcher implements FilePathMatcher {
 
-    private final PathMatcher whitelist;
-    private final PathMatcher blacklist;
-    private final PathMatcher fileSizeMinFilter;
-    private final PathMatcher fileSizeMaxFilter;
-    private final PathMatcher duplicateResultWhitelist;
+    private final @Nullable PathMatcher whitelist;
+    private final @Nullable PathMatcher blacklist;
+    private final @Nullable PathMatcher fileSizeMinFilter;
+    private final @Nullable PathMatcher fileSizeMaxFilter;
+    private final @Nullable PathMatcher duplicateResultWhitelist;
 
     public ConfigurableFilePathMatcher(FileUtilConfiguration configuration) {
-        this.whitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_WHITELIST));
-        this.blacklist = negatePathMatcher(toWildcardPattern(configuration.getString(DUPLICATE_FILTER_BLACKLIST)));
-        this.fileSizeMinFilter = toSizeFilter(configuration.getDoubleOrNull(DUPLICATE_FILTER_MIN_SIZE), true);
-        this.fileSizeMaxFilter = toSizeFilter(configuration.getDoubleOrNull(DUPLICATE_FILTER_MAX_SIZE), false);
-        this.duplicateResultWhitelist = toWildcardPattern(configuration.getString(DUPLICATE_FILTER_RESULT_WHITELIST));
+        this.whitelist = toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_WHITELIST));
+        this.blacklist = negatePathMatcher(toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_BLACKLIST)));
+        this.fileSizeMinFilter = toSizeFilter(configuration.getValue(DUPLICATE_FILTER_MIN_SIZE), true);
+        this.fileSizeMaxFilter = toSizeFilter(configuration.getValue(DUPLICATE_FILTER_MAX_SIZE), false);
+        this.duplicateResultWhitelist = toWildcardPattern(configuration.getValue(DUPLICATE_FILTER_RESULT_WHITELIST));
     }
 
     /**
@@ -42,8 +43,9 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
      * @param filter the filter to create a path matcher for
      * @return path matcher with the filter, or null
      */
+    @Nullable
     private static PathMatcher toWildcardPattern(String filter) {
-        if (filter == null || filter.isEmpty()) {
+        if (filter.isEmpty()) {
             return null;
         }
         try {
@@ -58,10 +60,11 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
      *
      * @param sizeInMb the required size in megabytes
      * @param isMin true to match files which are at least the given size, false for a matcher {@code size >= sizeInMb}
-     * @return path matcher for the given size, or null if the argument is null
+     * @return path matcher for the given size, or null if the argument is not positive
      */
-    private static PathMatcher toSizeFilter(Double sizeInMb, boolean isMin) {
-        if (sizeInMb == null) {
+    @Nullable
+    private static PathMatcher toSizeFilter(double sizeInMb, boolean isMin) {
+        if (sizeInMb <= 0.0) {
             return null;
         }
 
@@ -89,7 +92,7 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
         return paths.stream().anyMatch(path -> matches(duplicateResultWhitelist, path));
     }
 
-    private static boolean matches(PathMatcher matcher, Path path) {
+    private static boolean matches(@Nullable PathMatcher matcher, Path path) {
         return matcher == null || matcher.matches(path);
     }
 }

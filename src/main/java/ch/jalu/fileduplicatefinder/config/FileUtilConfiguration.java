@@ -1,110 +1,128 @@
 package ch.jalu.fileduplicatefinder.config;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
+import ch.jalu.configme.SettingsManager;
+import ch.jalu.configme.SettingsManagerBuilder;
+import ch.jalu.configme.utils.Utils;
+import ch.jalu.fileduplicatefinder.config.property.JfuOptionalProperty;
+import ch.jalu.fileduplicatefinder.config.property.JfuProperty;
+
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.function.Function;
 
-import static com.google.common.math.IntMath.ceilingPowerOfTwo;
-
+/**
+ * Provides values for all configurations.
+ */
 public class FileUtilConfiguration {
 
-    private final Scanner scanner;
-    private final Properties defaultProperties;
-    private final Properties userProperties;
-    private final Map<String, String> valuesFromScanner = new HashMap<>();
+    private final SettingsManager settingsManager;
+    private final ScannerPropertySource scannerPropertySource;
 
-    public FileUtilConfiguration(Scanner scanner, Path userPropertyFile) {
-        this.scanner = scanner;
-        try {
-            defaultProperties = createDefaultProperties();
-            userProperties = createUserPropertiesOrNull(userPropertyFile);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+    /**
+     * Constructor.
+     *
+     * @param scanner scanner instance to get user input when needed
+     * @param userPropertyFile custom path to the configuration file (nullable); a default name is used if null
+     */
+    public FileUtilConfiguration(Scanner scanner, @Nullable Path userPropertyFile) {
+        Path configFile = Objects.requireNonNullElseGet(userPropertyFile,
+            () -> Paths.get("./file-utils.properties"));
+        this.settingsManager = createSettingsManager(configFile);
+        this.scannerPropertySource = new ScannerPropertySource(scanner);
+    }
+
+    public <T> T getValue(JfuProperty<T> property) {
+        return getValue(property, false);
+    }
+
+    public <T> T getValue(JfuProperty<T> property, boolean forcePrompt) {
+        return getValue0(property, forcePrompt, Function.identity());
+    }
+
+    public <T> T getValueOrPrompt(JfuOptionalProperty<T> property) {
+        return getValueOrPrompt(property, false);
+    }
+
+    public <T> T getValueOrPrompt(JfuOptionalProperty<T> property, boolean forcePrompt) {
+        return getValue0(property, forcePrompt, opt -> opt.orElse(null));
+    }
+
+    public <T> void setValue(JfuProperty<T> property, T value) {
+        settingsManager.setProperty(property, value);
+    }
+
+    public void save() {
+        settingsManager.save();
+    }
+
+    private <T, R> R getValue0(JfuProperty<T> property, boolean forcePrompt, Function<T, R> resultTransformer) {
+        // 1. Get existing value and output in case there is any error (this informs the user in case it was weird in
+        //    the properties file or on the command line)
+        ValueOrError<T> valueOrError = fromOverridingSourceOrSettingsManager(property);
+        if (valueOrError.getErrorReason() != null) {
+            System.err.println("Configured value for '" + property.getPath() + "' is invalid: "
+                + valueOrError.getErrorReason());
+        }
+
+        // 2. If there is a value, return it if we don't need to force the user to respecify the value.
+        R oldValue = valueOrError.getValue() == null ? null : resultTransformer.apply(valueOrError.getValue());
+        if (!forcePrompt && oldValue != null) {
+            return oldValue;
+        }
+
+        // 3. Inform the user what he has to input
+        String prevValue = oldValue == null
+            ? ""
+            : " (current value: \"" + property.toExportValue(valueOrError.getValue()) + "\")";
+        System.out.println("Please enter a value for '" + property.getPath() + "'" + prevValue + ":");
+
+        // 4. Get input and validate (repeating the process until we have a valid input)
+        while (true) {
+            String strValue = scannerPropertySource.promptStringAndRegister(property.getPath());
+            valueOrError = property.fromString(strValue);
+
+            if (valueOrError.getErrorReason() != null) {
+                System.err.println(valueOrError.getErrorReason());
+            } else {
+                R result = resultTransformer.apply(valueOrError.getValue());
+                if (result == null) {
+                    System.err.println("Please provide a value");
+                } else {
+                    return result;
+                }
+            }
+
+            System.out.println("Please enter a value for '" + property.getPath() + "':");
         }
     }
 
-    public String getString(String key) {
-        if (valuesFromScanner.containsKey(key)) {
-            return valuesFromScanner.get(key);
+    private <T> ValueOrError<T> fromOverridingSourceOrSettingsManager(JfuProperty<T> property) {
+        String overridingValue = getValueFromOverridingSources(property.getPath());
+        if (overridingValue != null) {
+            return property.fromString(overridingValue);
+        }
+        return ValueOrError.forValue(settingsManager.getProperty(property));
+    }
+
+    @Nullable
+    private String getValueFromOverridingSources(String path) {
+        String value = scannerPropertySource.getValue(path);
+        if (value != null) {
+            return value;
         }
 
-        String systemProperty = System.getProperty(key);
-        if (systemProperty != null) {
-            return systemProperty;
-        }
-
-        String valueFromProperties = Optional.ofNullable(userProperties)
-            .map(prop -> prop.getProperty(key))
-            .orElseGet(() -> defaultProperties.getProperty(key));
-        if (valueFromProperties != null) {
-            return valueFromProperties;
-        }
-
-        System.out.println("Provide value for '" + key + "':");
-        String valueFromScanner = scanner.nextLine();
-        valuesFromScanner.put(key, valueFromScanner);
-        return valueFromScanner;
+        return System.getProperty(path);
     }
 
-    public int getInt(String key) {
-        String value = getString(key);
-        return Integer.parseInt(value);
-    }
-
-    public int getPowerOfTwoMinusOne(String key) {
-        int value = getInt(key);
-        return ceilingPowerOfTwo(value) - 1;
-    }
-
-    public double getDouble(String key) {
-        String value = getString(key);
-        return Double.parseDouble(value);
-    }
-
-    public Double getDoubleOrNull(String key) {
-        String value = getString(key);
-        return (value == null || value.isEmpty()) ? null : Double.valueOf(value);
-    }
-
-    public boolean getBoolean(String key) {
-        String value = getString(key);
-        return Boolean.parseBoolean(value);
-    }
-
-    public Path getPath(String key) {
-        String value = getString(key);
-        return Paths.get(value);
-    }
-
-
-    private Properties createDefaultProperties() throws IOException {
-        Properties properties = new Properties();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("default.properties")) {
-            properties.load(is);
-        }
-        return properties;
-    }
-
-    private Properties createUserPropertiesOrNull(Path configFile) throws IOException {
-        if (configFile == null) {
-            return null;
-        } else if (!Files.exists(configFile)) {
-            System.err.println("Skipping config file '" + configFile + "' as it does not exist");
-            return null;
-        }
-
-        Properties properties = new Properties();
-        try (InputStream is = Files.newInputStream(configFile)) {
-            properties.load(is);
-        }
-        return properties;
+    private static SettingsManager createSettingsManager(Path configFile) {
+        Utils.createFileIfNotExists(configFile);
+        return SettingsManagerBuilder
+            .withResource(new PropertyFileResource(configFile))
+            .configurationData(FileUtilSettings.class)
+            .useDefaultMigrationService()
+            .create();
     }
 }

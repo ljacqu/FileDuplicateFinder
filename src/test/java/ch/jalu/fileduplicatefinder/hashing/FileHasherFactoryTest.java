@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 /**
  * Test for {@link FileHasherFactory}.
@@ -16,7 +15,7 @@ class FileHasherFactoryTest {
     @Test
     void shouldCreateFileHasher() {
         // given
-        List<String> algorithms = Arrays.asList("sha1", "sha256", "md5", "crc32");
+        List<HashingAlgorithm> algorithms = Arrays.asList(HashingAlgorithm.values());
         FileHasherFactory fileHasherFactory = new FileHasherFactory();
 
         // when / then
@@ -25,17 +24,5 @@ class FileHasherFactoryTest {
                 .as("File hasher '" + algorithm + "'")
                 .isNotNull();
         });
-    }
-
-    @Test
-    void shouldThrowForUnknownAlgorithm() {
-        // given
-        String algorithm = "bogus";
-        FileHasherFactory fileHasherFactory = new FileHasherFactory();
-
-        // when / then
-        assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy(() -> fileHasherFactory.createFileHasher(algorithm))
-            .withMessage("Unknown algorithm 'bogus'");
     }
 }

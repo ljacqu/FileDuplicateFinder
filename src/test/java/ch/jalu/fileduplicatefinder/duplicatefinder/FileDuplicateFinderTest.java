@@ -14,11 +14,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_HASH_MAX_SIZE_MB;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
-import static ch.jalu.fileduplicatefinder.config.FileUtilProperties.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_HASH_MAX_SIZE_MB;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ;
+import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.DUPLICATE_READ_BEFORE_HASH_MIN_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -47,6 +48,8 @@ class FileDuplicateFinderTest {
     @BeforeEach
     public void initFields() {
         MockitoAnnotations.initMocks(this);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
         fileDuplicateFinder = new FileDuplicateFinder(rootFolder, fileHasher, filePathMatcher, configuration);
     }
 
@@ -55,10 +58,11 @@ class FileDuplicateFinderTest {
         // given
         given(filePathMatcher.shouldScan(any(Path.class))).willReturn(true);
         given(filePathMatcher.hasFileFromResultWhitelist(anyCollection())).willReturn(true);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
-        given(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(9.0);
-        given(configuration.getDouble(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(5.0);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(9.0);
+        given(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(5.0);
+        given(configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)).willReturn(false);
         given(fileHasher.calculateHash(any(Path.class)))
             .willAnswer(invocation -> MoreFiles.getFileExtension(invocation.getArgument(0)));
 
@@ -78,10 +82,11 @@ class FileDuplicateFinderTest {
         // given
         given(filePathMatcher.shouldScan(any(Path.class))).willReturn(true);
         given(filePathMatcher.hasFileFromResultWhitelist(anyCollection())).willReturn(true);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(3);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(3);
-        given(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.0009); // approx 1 KB
-        given(configuration.getDouble(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(0.1);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(3);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(3);
+        given(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.0009); // approx 1 KB
+        given(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(0.1);
+        given(configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)).willReturn(false);
         given(fileHasher.calculateHash(any(Path.class)))
             .willAnswer(invocation -> MoreFiles.getFileExtension(invocation.getArgument(0)));
 
@@ -101,11 +106,12 @@ class FileDuplicateFinderTest {
         // given
         given(filePathMatcher.shouldScan(any(Path.class))).willReturn(true);
         given(filePathMatcher.hasFileFromResultWhitelist(anyCollection())).willReturn(true);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
-        given(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.5);
-        given(configuration.getDouble(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(0.0000001);
-        given(configuration.getInt(DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ)).willReturn(5);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.5);
+        given(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(0.0000001);
+        given(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_BYTES_TO_READ)).willReturn(5);
+        given(configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)).willReturn(false);
         given(fileHasher.calculateHash(any(Path.class))).willReturn("s");
 
         // when
@@ -127,10 +133,11 @@ class FileDuplicateFinderTest {
         given(filePathMatcher.shouldScan(any(Path.class)))
             .willAnswer(invocation -> !invocation.getArgument(0).toString().endsWith(".txt"));
         given(filePathMatcher.hasFileFromResultWhitelist(anyCollection())).willReturn(true);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
-        given(configuration.getPowerOfTwoMinusOne(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
-        given(configuration.getDouble(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.5);
-        given(configuration.getDouble(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(555.0);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
+        given(configuration.getValue(DUPLICATE_HASH_MAX_SIZE_MB)).willReturn(0.5);
+        given(configuration.getValue(DUPLICATE_READ_BEFORE_HASH_MIN_SIZE)).willReturn(555.0);
+        given(configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)).willReturn(false);
         given(fileHasher.calculateHash(any(Path.class)))
             .willAnswer(invocation -> MoreFiles.getFileExtension(invocation.getArgument(0)));
 

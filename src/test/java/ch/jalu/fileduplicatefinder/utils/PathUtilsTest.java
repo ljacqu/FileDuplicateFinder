@@ -2,11 +2,19 @@ package ch.jalu.fileduplicatefinder.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -21,15 +29,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOf
 class PathUtilsTest {
 
     private static Path folder = getTestSamplesFolder();
-
-    @Test
-    void shouldConvertNumberInBytesToMegaBytes() {
-        // given / when / then
-        assertThat(PathUtils.megaBytesToBytes(3)).isEqualTo(3145728);
-        assertThat(PathUtils.megaBytesToBytes(1.002)).isEqualTo(1050673);
-        assertThat(PathUtils.megaBytesToBytes(0)).isEqualTo(0);
-        assertThat(PathUtils.megaBytesToBytes(2.45)).isEqualTo(2569011);
-    }
 
     @Test
     void shouldNegatePathMatcher() {
@@ -94,5 +93,38 @@ class PathUtilsTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
             .isThrownBy(() -> PathUtils.size(file))
             .withMessageEndingWith("is not a file");
+    }
+
+    @Test
+    void shouldReturnLastModifiedTime() throws IOException {
+        // given
+        Path file = folder.resolve("test_4.csv");
+        ZonedDateTime date = ZonedDateTime.of(2022, 9, 4, 15, 13, 11, 0, ZoneId.systemDefault());
+        Files.setLastModifiedTime(file, FileTime.from(Instant.from(date)));
+
+        // when
+        FileTime lastModified = PathUtils.getLastModifiedTime(file);
+
+        // then
+        Instant instant = lastModified.toInstant();
+        LocalDate lastModifiedLocalDate = LocalDate.ofInstant(instant, ZoneOffset.UTC);
+        assertThat(lastModifiedLocalDate).isEqualTo(LocalDate.of(2022, 9, 4));
+    }
+
+    @Test
+    void shouldWrapExceptionIfLastModifiedTimeCannotBeRetrieved() {
+        // given
+        Path file = folder.resolve("bogus");
+
+        // when / then
+        assertThatExceptionOfType(UncheckedIOException.class)
+            .isThrownBy(() -> PathUtils.getLastModifiedTime(file));
+    }
+
+    @Test
+    void shouldReturnToStringForPathsInNullSafeManner() {
+        // given / when / then
+        assertThat(PathUtils.toStringNullSafe(Paths.get("example.txt"))).isEqualTo("example.txt");
+        assertThat(PathUtils.toStringNullSafe(null)).isNull();
     }
 }

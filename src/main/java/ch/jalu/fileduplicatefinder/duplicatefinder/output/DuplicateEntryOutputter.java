@@ -1,4 +1,4 @@
-package ch.jalu.fileduplicatefinder.output;
+package ch.jalu.fileduplicatefinder.duplicatefinder.output;
 
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;

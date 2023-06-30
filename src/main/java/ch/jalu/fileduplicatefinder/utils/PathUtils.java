@@ -1,10 +1,12 @@
 package ch.jalu.fileduplicatefinder.utils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.attribute.FileTime;
 import java.util.stream.Stream;
 
 /**
@@ -12,19 +14,7 @@ import java.util.stream.Stream;
  */
 public final class PathUtils {
 
-    private static final int BYTES_IN_ONE_MEGA_BYTE = 1024 * 1024;
-
     private PathUtils() {
-    }
-
-    /**
-     * Converts the given amount in megabytes to bytes.
-     *
-     * @param megaBytes the megabytes to convert
-     * @return the bytes
-     */
-    public static long megaBytesToBytes(double megaBytes) {
-        return Math.round(megaBytes * BYTES_IN_ONE_MEGA_BYTE);
     }
 
     /**
@@ -67,5 +57,30 @@ public final class PathUtils {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to get size of '" + path.toAbsolutePath() + "'", e);
         }
+    }
+
+    /**
+     * Returns the last modified time of the given path.
+     *
+     * @param path the path to get the last modified time of
+     * @return last modified time
+     */
+    public static FileTime getLastModifiedTime(Path path) {
+        try {
+            return Files.getLastModifiedTime(path);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to get last modified time of '" + path.toAbsolutePath() + "'", e);
+        }
+    }
+
+    /**
+     * Returns the String representation of the given path, or null if the argument is null.
+     *
+     * @param path the path to toString (if not null)
+     * @return string of the path, or null
+     */
+    @Nullable
+    public static String toStringNullSafe(@Nullable Path path) {
+        return path == null ? null : path.toString();
     }
 }
