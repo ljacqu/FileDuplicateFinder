@@ -14,18 +14,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class RegexFileRenamer extends FileRenamer {
 
     private final Path folder;
-    private final Pattern pattern;
-    private final String replacement;
     private Map<String, String> renamings;
 
-    public RegexFileRenamer(Path folder, Pattern pattern, String replacement) {
+    public RegexFileRenamer(Path folder) {
         super(folder);
         this.folder = checkNotNull(folder, "folder");
-        this.pattern = checkNotNull(pattern, "pattern");
-        this.replacement = checkNotNull(replacement, "replacement");
     }
 
-    public Map<String, String> generateRenamingsPreview() {
+    public Map<String, String> generateRenamingsPreview(Pattern pattern, String replacement) {
         renamings = new LinkedHashMap<>();
         PathUtils.list(folder)
             .filter(Files::isRegularFile)

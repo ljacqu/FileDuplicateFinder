@@ -43,8 +43,6 @@ public abstract class FileRenamer {
             .filter(Files::isRegularFile);
     }
 
-    public abstract Map<String, String> generateRenamingsPreview();
-
     protected abstract Map<String, String> getRenamings();
 
     public void performRenamings() {
