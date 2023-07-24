@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class FileRenamer {
 
-    private Path folder;
+    private final Path folder;
 
     public FileRenamer(Path folder) {
         this.folder = checkNotNull(folder, "folder");
