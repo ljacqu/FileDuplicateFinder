@@ -83,6 +83,7 @@ public class FileRenameRunner {
             }
         } while (true);
     }
+
     private void generateAndConfirmRenamingsForRegex(Path folder, Map<String, String> replacements) {
         if (replacements.isEmpty()) {
             System.out.println("Nothing to rename in " + folder.toAbsolutePath());
