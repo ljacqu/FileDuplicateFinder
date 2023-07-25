@@ -1,12 +1,13 @@
 package ch.jalu.fileduplicatefinder.duplicatefinder;
 
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.duplicatefinder.output.DuplicateEntryOutputter;
 import ch.jalu.fileduplicatefinder.filefilter.ConfigurableFilePathMatcher;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
-import ch.jalu.fileduplicatefinder.duplicatefinder.output.DuplicateEntryOutputter;
+import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import com.google.common.base.Preconditions;
 
 import java.nio.file.Files;
@@ -27,20 +28,22 @@ public class FileDuplicateRunner {
     private final FileHasherFactory fileHasherFactory;
     private final FolderPairDuplicatesCounter folderPairDuplicatesCounter;
     private final DuplicateEntryOutputter entryOutputter;
+    private final TaskWriterReader logger;
     private final long start = System.currentTimeMillis();
 
     public FileDuplicateRunner(FileUtilConfiguration configuration, FileHasherFactory fileHasherFactory,
                                FolderPairDuplicatesCounter folderPairDuplicatesCounter,
-                               DuplicateEntryOutputter entryOutputter) {
+                               DuplicateEntryOutputter entryOutputter, TaskWriterReader logger) {
         this.configuration = configuration;
         this.fileHasherFactory = fileHasherFactory;
         this.folderPairDuplicatesCounter = folderPairDuplicatesCounter;
         this.entryOutputter = entryOutputter;
+        this.logger = logger;
     }
 
     public void run() {
         Path path = configuration.getValueOrPrompt(DUPLICATE_FOLDER);
-        System.out.println("Processing '" + path.toAbsolutePath() + "'");
+        logger.printLn("Processing '" + path.toAbsolutePath() + "'");
         Preconditions.checkArgument(Files.exists(path),
             "Path '" + path.toAbsolutePath() + "' does not exist");
         Preconditions.checkArgument(Files.isDirectory(path),
@@ -55,24 +58,25 @@ public class FileDuplicateRunner {
         entryOutputter.outputResult(duplicates);
 
         if (configuration.getValue(DUPLICATE_OUTPUT_FOLDER_PAIR_COUNT)) {
-            System.out.println();
-            System.out.println("Folder duplicates");
+            logger.printNewLine();
+            logger.printLn("Folder duplicates");
 
             Map<FolderPair, Long> duplicatesByFolderPair = folderPairDuplicatesCounter
                 .getFolderToFolderDuplicateCount(duplicates);
             entryOutputter.outputDirectoryPairs(duplicatesByFolderPair);
         }
 
-        System.out.println("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
+        logger.printLn("Took " + ((System.currentTimeMillis() - start) / 1000.0) + " seconds");
     }
 
     private List<DuplicateEntry> findDuplicates(Path path, FileHasher fileHasher, FilePathMatcher pathMatcher) {
-        FileDuplicateFinder fileDuplicateFinder = new FileDuplicateFinder(path, fileHasher, pathMatcher, configuration);
+        FileDuplicateFinder fileDuplicateFinder =
+            new FileDuplicateFinder(path, fileHasher, pathMatcher, configuration, logger);
         fileDuplicateFinder.processFiles();
         if (configuration.getValue(DUPLICATE_OUTPUT_DISTRIBUTION)) {
             fileDuplicateFinder.getSizeDistribution().entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
-                .forEach(e -> System.out.println(e.getValue() + " file size entries with " + e.getKey() + " files"));
+                .forEach(e -> logger.printLn(e.getValue() + " file size entries with " + e.getKey() + " files"));
         }
         return fileDuplicateFinder.filterFilesForDuplicates();
     }

@@ -3,12 +3,12 @@ package ch.jalu.fileduplicatefinder.rename;
 import ch.jalu.fileduplicatefinder.ExitRunnerException;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.config.FileUtilSettings;
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import static ch.jalu.fileduplicatefinder.config.FileUtilSettings.RENAME_DATE_DATE_FORMAT;
@@ -21,11 +21,11 @@ public class FileRenameRunner {
     public static final String ID_REGEX = "rename";
     public static final String ID_DATE = "addDate";
 
-    private final Scanner scanner;
+    private final WriterReader logger;
     private final FileUtilConfiguration configuration;
 
-    public FileRenameRunner(Scanner scanner, FileUtilConfiguration configuration) {
-        this.scanner = scanner;
+    public FileRenameRunner(WriterReader logger, FileUtilConfiguration configuration) {
+        this.logger = logger;
         this.configuration = configuration;
     }
 
@@ -49,11 +49,11 @@ public class FileRenameRunner {
             }
             generatePreviews = true;
 
-            String input = scanner.nextLine().trim().toLowerCase(Locale.ROOT);
+            String input = logger.getNextLine().trim().toLowerCase(Locale.ROOT);
             switch (input) {
                 case "y":
                     renamerHandler.performRenamings();
-                    System.out.println("Type 'q' to quit, 'n' to define a new pattern, or 'f' to change folder");
+                    logger.printLn("Type 'q' to quit, 'n' to define a new pattern, or 'f' to change folder");
                     generatePreviews = false;
                     break;
                 case "n":
@@ -74,11 +74,11 @@ public class FileRenameRunner {
                 case "exit":
                     throw new ExitRunnerException();
                 default: // "h"
-                    System.out.println("- 'h' for help");
-                    System.out.println("- 'f' to change folder");
-                    System.out.println("- 'r' to refresh the preview");
-                    System.out.println("- 'q' to quit to main");
-                    System.out.println("- 'x' to exit the application");
+                    logger.printLn("- 'h' for help");
+                    logger.printLn("- 'f' to change folder");
+                    logger.printLn("- 'r' to refresh the preview");
+                    logger.printLn("- 'q' to quit to main");
+                    logger.printLn("- 'x' to exit the application");
                     generatePreviews = false;
             }
         } while (true);
@@ -86,12 +86,12 @@ public class FileRenameRunner {
 
     private void generateAndConfirmRenamingsForRegex(Path folder, Map<String, String> replacements) {
         if (replacements.isEmpty()) {
-            System.out.println("Nothing to rename in " + folder.toAbsolutePath());
-            System.out.println("Type 'n' to redefine the pattern, 'q' to quit, 'h' for help");
+            logger.printLn("Nothing to rename in " + folder.toAbsolutePath());
+            logger.printLn("Type 'n' to redefine the pattern, 'q' to quit, 'h' for help");
         } else {
-            System.out.println("This will rename " + replacements.size() + " files. Preview:");
-            replacements.forEach((source, target) -> System.out.println(" " + source + " -> " + target));
-            System.out.println("Perform renaming [y/n]? Type 'q' to quit, 'h' for help");
+            logger.printLn("This will rename " + replacements.size() + " files. Preview:");
+            replacements.forEach((source, target) -> logger.printLn(" " + source + " -> " + target));
+            logger.printLn("Perform renaming [y/n]? Type 'q' to quit, 'h' for help");
         }
     }
 
@@ -107,7 +107,7 @@ public class FileRenameRunner {
 
     }
 
-    private static final class RegexRenamerHandler implements RenamerHandler {
+    private final class RegexRenamerHandler implements RenamerHandler {
 
         private RegexFileRenamer renamer;
         private Pattern fromPattern;
@@ -116,7 +116,7 @@ public class FileRenameRunner {
 
         @Override
         public void createRenamer(Path folder) {
-            renamer = new RegexFileRenamer(folder);
+            renamer = new RegexFileRenamer(folder, logger);
         }
 
         @Override
@@ -136,7 +136,7 @@ public class FileRenameRunner {
         }
     }
 
-    private static final class DateRenamerHandler implements RenamerHandler {
+    private final class DateRenamerHandler implements RenamerHandler {
 
         private ModifiedDateFileNameRenamer renamer;
         private String replacement;
@@ -144,7 +144,7 @@ public class FileRenameRunner {
 
         @Override
         public void createRenamer(Path folder) {
-            renamer = new ModifiedDateFileNameRenamer(folder);
+            renamer = new ModifiedDateFileNameRenamer(folder, logger);
         }
 
         @Override

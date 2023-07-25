@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
+import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
@@ -41,6 +42,7 @@ public class FileDuplicateFinder {
     private final FileHasher fileHasher;
     private final FilePathMatcher pathMatcher;
     private final FileUtilConfiguration configuration;
+    private final TaskWriterReader logger;
 
     private final int progressFilesFound;
     private final int progressFilesHashed;
@@ -50,11 +52,12 @@ public class FileDuplicateFinder {
     private int hashingSaveCount;
 
     public FileDuplicateFinder(Path rootFolder, FileHasher fileHasher, FilePathMatcher pathMatcher,
-                               FileUtilConfiguration configuration) {
+                               FileUtilConfiguration configuration, TaskWriterReader logger) {
         this.rootFolder = rootFolder;
         this.fileHasher = fileHasher;
         this.pathMatcher = pathMatcher;
         this.configuration = configuration;
+        this.logger = logger;
 
         this.progressFilesFound = configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL);
         this.progressFilesHashed = configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL);
@@ -62,7 +65,7 @@ public class FileDuplicateFinder {
 
     public void processFiles() {
         processPath(rootFolder);
-        System.out.println("Found total " + count + " files");
+        logger.printLn("Found total " + count + " files");
     }
 
     private void processPath(Path path) {
@@ -75,22 +78,22 @@ public class FileDuplicateFinder {
                 paths.add(path);
 
                 if ((++count & progressFilesFound) == 0) {
-                    System.out.println("Found " + count + " files");
+                    logger.printLn("Found " + count + " files");
                 }
             }
         }
     }
 
     public List<DuplicateEntry> filterFilesForDuplicates() {
-        System.out.println();
-        System.out.print("Hashing files");
+        logger.printLn("");
+        logger.print("Hashing files");
         List<DuplicateEntry> duplicateEntries = pathsBySize.entrySet().stream()
             .filter(entry -> entry.getValue().size() > 1)
             .flatMap(hashEntriesInFileSizeAndReturnDuplicates())
             .sorted(createDuplicateEntryComparator())
             .collect(Collectors.toList());
         if (configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
-            System.out.println("Skipped hashing " + hashingSaveCount + " files from reading bytes before hashing");
+            logger.printLn("Skipped hashing " + hashingSaveCount + " files from reading bytes before hashing");
         }
         return duplicateEntries;
     }
@@ -105,10 +108,10 @@ public class FileDuplicateFinder {
         return entry -> {
             Runnable progressUpdater = () -> {
                 if ((++hashedFiles[0] & progressFilesHashed) == 0) {
-                    System.out.println();
-                    System.out.print("Hashed " + hashedFiles[0] + " files");
+                    logger.printNewLine();
+                    logger.print("Hashed " + hashedFiles[0] + " files");
                 } else if ((hashedFiles[0] & 15) == 0) {
-                    System.out.print(" . ");
+                    logger.printWithoutPrefix(" . ");
                 }
             };
 
@@ -161,7 +164,7 @@ public class FileDuplicateFinder {
                 .flatMap(e -> e.getValue().stream())
                 .collect(Collectors.toList());
             if (configuration.getValue(DUPLICATE_OUTPUT_DIFFERENCE_READ_FILES_VS_HASH)) {
-                System.out.print(paths.size() + " -> " + filteredPaths.size() + " ");
+                logger.printLn(paths.size() + " -> " + filteredPaths.size() + " ");
                 hashingSaveCount += paths.size() - filteredPaths.size();
             }
             return filteredPaths;

@@ -1,5 +1,7 @@
 package ch.jalu.fileduplicatefinder.rename;
 
+import ch.jalu.fileduplicatefinder.output.WriterReader;
+
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,8 +10,8 @@ import java.util.regex.Pattern;
 
 public class RegexFileRenamer extends FileRenamer {
 
-    public RegexFileRenamer(Path folder) {
-        super(folder);
+    public RegexFileRenamer(Path folder, WriterReader logger) {
+        super(folder, logger);
     }
 
     public Map<String, String> generateRenamingsPreview(Pattern pattern, String replacement) {

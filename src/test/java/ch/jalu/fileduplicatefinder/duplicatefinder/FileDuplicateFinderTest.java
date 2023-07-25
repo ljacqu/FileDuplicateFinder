@@ -4,6 +4,7 @@ import ch.jalu.fileduplicatefinder.TestUtils;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.filefilter.FilePathMatcher;
 import ch.jalu.fileduplicatefinder.hashing.FileHasher;
+import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import com.google.common.io.MoreFiles;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,9 @@ class FileDuplicateFinderTest {
     @Mock
     private FilePathMatcher filePathMatcher;
 
+    @Mock
+    private TaskWriterReader logger;
+
     private Path rootFolder = TestUtils.getTestSamplesFolder();
 
     @BeforeEach
@@ -50,7 +54,7 @@ class FileDuplicateFinderTest {
         MockitoAnnotations.initMocks(this);
         given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_FOUND_INTERVAL)).willReturn(1023);
         given(configuration.getValue(DUPLICATE_OUTPUT_PROGRESS_FILES_HASHED_INTERVAL)).willReturn(1023);
-        fileDuplicateFinder = new FileDuplicateFinder(rootFolder, fileHasher, filePathMatcher, configuration);
+        fileDuplicateFinder = new FileDuplicateFinder(rootFolder, fileHasher, filePathMatcher, configuration, logger);
     }
 
     @Test

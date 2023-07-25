@@ -1,5 +1,6 @@
 package ch.jalu.fileduplicatefinder.rename;
 
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 
 import java.io.IOException;
@@ -13,23 +14,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class FileRenamer {
 
     private final Path folder;
+    private final WriterReader logger;
     private Map<String, String> renamings;
 
-    public FileRenamer(Path folder) {
+    public FileRenamer(Path folder, WriterReader logger) {
         this.folder = checkNotNull(folder, "folder");
+        this.logger = logger;
     }
 
-    protected static void renameFileAndOutputResult(String sourceToTargetTxt, Path source, Path target) {
+    protected void renameFileAndOutputResult(String sourceToTargetTxt, Path source, Path target) {
         if (!Files.isRegularFile(source)) {
-            System.err.println("Skip " + sourceToTargetTxt + ": not a file");
+            logger.printError("Skip " + sourceToTargetTxt + ": not a file");
         } else if (Files.exists(target)) {
-            System.err.println("Skip " + sourceToTargetTxt + ": new name already exists");
+            logger.printError("Skip " + sourceToTargetTxt + ": new name already exists");
         } else {
             try {
                 Files.move(source, target);
-                System.out.println(sourceToTargetTxt);
+                logger.printLn(sourceToTargetTxt);
             } catch (IOException e) {
-                System.err.println("Skip " + sourceToTargetTxt + ": Threw ["
+                logger.printError("Skip " + sourceToTargetTxt + ": Threw ["
                     + e.getClass().getSimpleName() + "]: " + e.getMessage());
             }
         }
@@ -46,10 +49,10 @@ public abstract class FileRenamer {
 
     public void performRenamings() {
         if (renamings == null) {
-            System.err.println("Expected preview to be run first");
+            logger.printError("Expected preview to be run first");
             return;
         } else if (renamings.isEmpty()) {
-            System.out.println("Nothing to rename!");
+            logger.printLn("Nothing to rename!");
             return;
         }
 
@@ -58,7 +61,7 @@ public abstract class FileRenamer {
             Path target = folder.resolve(targetName);
             renameFileAndOutputResult(sourceName + " -> " + targetName, source, target);
         });
-        System.out.println("Processed all files.");
+        logger.printLn("Processed all files.");
 
         renamings = null;
     }
