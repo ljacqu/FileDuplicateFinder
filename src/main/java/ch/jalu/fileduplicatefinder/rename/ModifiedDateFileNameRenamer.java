@@ -13,14 +13,12 @@ import java.util.Map;
 
 public class ModifiedDateFileNameRenamer extends FileRenamer {
 
-    private Map<String, String> renamings;
-
     public ModifiedDateFileNameRenamer(Path folder) {
         super(folder);
     }
 
     public Map<String, String> generateRenamingsPreview(String replacementPattern, DateTimeFormatter dateFormatter) {
-        renamings = new HashMap<>();
+        Map<String, String> renamings = new HashMap<>();
         streamFiles()
             .forEach(file -> {
                 LocalDateTime modifiedDate = getLastModifiedDate(file);
@@ -33,11 +31,7 @@ public class ModifiedDateFileNameRenamer extends FileRenamer {
                     .replace("{ext}", MoreFiles.getFileExtension(file));
                 renamings.put(filename, newName);
             });
-        return renamings;
-    }
-
-    @Override
-    public Map<String, String> getRenamings() {
+        setRenamings(renamings);
         return renamings;
     }
 

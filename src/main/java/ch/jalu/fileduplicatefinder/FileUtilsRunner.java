@@ -61,6 +61,8 @@ public class FileUtilsRunner {
                         + ", " + FileTreeRunner.ID;
                     System.err.println("Unknown task '" + task + "'. Possible tasks: " + taskList);
             }
+        } catch (ExitRunnerException ignore) {
+            // Nothing to do
         }
     }
 

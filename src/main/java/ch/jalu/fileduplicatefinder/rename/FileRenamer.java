@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class FileRenamer {
 
     private final Path folder;
+    private Map<String, String> renamings;
 
     public FileRenamer(Path folder) {
         this.folder = checkNotNull(folder, "folder");
@@ -34,21 +35,19 @@ public abstract class FileRenamer {
         }
     }
 
-    public Path getFolder() {
-        return folder;
-    }
-
     protected Stream<Path> streamFiles() {
         return PathUtils.list(folder)
             .filter(Files::isRegularFile);
     }
 
-    protected abstract Map<String, String> getRenamings();
+    protected void setRenamings(Map<String, String> renamings) {
+        this.renamings = renamings;
+    }
 
     public void performRenamings() {
-        Map<String, String> renamings = getRenamings();
         if (renamings == null) {
-            throw new IllegalStateException("Expected preview to be run first");
+            System.err.println("Expected preview to be run first");
+            return;
         } else if (renamings.isEmpty()) {
             System.out.println("Nothing to rename!");
             return;
@@ -60,6 +59,8 @@ public abstract class FileRenamer {
             renameFileAndOutputResult(sourceName + " -> " + targetName, source, target);
         });
         System.out.println("Processed all files.");
+
+        renamings = null;
     }
 
 }
