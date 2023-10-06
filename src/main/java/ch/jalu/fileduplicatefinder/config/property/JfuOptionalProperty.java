@@ -59,7 +59,7 @@ public class JfuOptionalProperty<T> extends JfuProperty<Optional<T>> {
         private final JfuPropertyType<T> baseType;
 
         JfuOptionalType(JfuProperty<T> baseType) {
-            this.baseType = baseType.getPropertyType();
+            this.baseType = baseType.getType();
         }
 
         @Override
