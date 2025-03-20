@@ -43,7 +43,8 @@ public abstract class JfuProperty<T> extends TypeBasedProperty<T> {
             : ValueOrError.forValue(converted);
     }
 
-    protected JfuPropertyType<T> getPropertyType() {
+    @Override
+    public JfuPropertyType<T> getType() {
         return propertyType;
     }
 }

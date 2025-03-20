@@ -1,9 +1,11 @@
 package ch.jalu.fileduplicatefinder.filecount;
 
+import ch.jalu.fileduplicatefinder.ExitRunnerException;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,19 +30,19 @@ public class FileCountRunner {
 
     public static final String ID = "filecount";
 
-    private final Scanner scanner;
+    private final WriterReader logger;
 
     private final FileUtilConfiguration configuration;
 
-    public FileCountRunner(Scanner scanner, FileUtilConfiguration configuration) {
-        this.scanner = scanner;
+    public FileCountRunner(WriterReader logger, FileUtilConfiguration configuration) {
+        this.logger = logger;
         this.configuration = configuration;
     }
 
-    public void run() {
+    public void run() throws ExitRunnerException {
         Path folder = getFolderFromProperties();
         Map<String, FileCountEntry> statsByExtension = new FileCounter(folder).gatherExtensionCount();
-        System.out.println("Found " + statsByExtension.size() + " different file extensions");
+        logger.printLn("Found " + statsByExtension.size() + " different file extensions");
 
         applyConfiguredGroups(statsByExtension);
 
@@ -61,12 +62,16 @@ public class FileCountRunner {
                 toggleDetails();
             } else if (command.equals("saveconf")) {
                 saveConfiguration(statsByExtension);
+            } else if (command.equalsIgnoreCase("q") || command.equalsIgnoreCase("quit")) {
+                return;
+            } else if (command.equalsIgnoreCase("x") || command.equalsIgnoreCase("exit")) {
+                throw new ExitRunnerException();
             } else {
                 outputHelp();
             }
-            System.out.print("Command: ");
-            command = scanner.nextLine();
-        } while (!"exit".equals(command));
+            logger.printLn("Command: ");
+            command = logger.getNextLine();
+        } while (true);
     }
 
     private Path getFolderFromProperties() {
@@ -85,7 +90,7 @@ public class FileCountRunner {
             if (pat.matcher(groupDefinition).matches()) {
                 handleGroupCommand("group " + groupDefinition, statsByExtension, true);
             } else if (!groupDefinition.isEmpty()) {
-                System.err.println("Ignoring group definition '" + groupDefinition + "': invalid definition");
+                logger.printError("Ignoring group definition '" + groupDefinition + "': invalid definition");
             }
         }
     }
@@ -94,7 +99,7 @@ public class FileCountRunner {
                                     boolean ignoreMismatches) {
         String[] commandParts = groupCommand.split(" ");
         if (commandParts.length != 3) {
-            System.err.println("Invalid group command! Expected something like 'group image .jpg,.jpeg,.png'");
+            logger.printError("Invalid group command! Expected something like 'group image .jpg,.jpeg,.png'");
             return;
         }
         String groupName = normalizeGroupNameOrPrintError(commandParts[1]);
@@ -115,17 +120,17 @@ public class FileCountRunner {
             group.addDefinition(extension);
 
             if (!ignoreMismatches && oldCount == group.getCount()) {
-                System.out.println(" Note: nothing matched the rule '" + extension + "'");
+                logger.printLn(" Note: nothing matched the rule '" + extension + "'");
             }
         }
 
         if (initialTotalExtensions == group.getExtensions().size()) {
-            System.out.println("Nothing could be added to the group '" + groupName + "'");
+            logger.printLn("Nothing could be added to the group '" + groupName + "'");
         } else if (initialTotalExtensions == 0) {
             statsByExtension.put(groupName, group);
-            System.out.println("Created new group '" + groupName + "'");
+            logger.printLn("Created new group '" + groupName + "'");
         } else {
-            System.out.println("Updated group '" + groupName + "'");
+            logger.printLn("Updated group '" + groupName + "'");
         }
     }
 
@@ -135,18 +140,18 @@ public class FileCountRunner {
             long totalGroups = statsByExtension.entrySet().stream()
                 .filter(entry -> entry.getValue() instanceof FileGroupCount)
                 .peek(grpEntry -> {
-                    System.out.println("Group " + grpEntry.getKey() + ": "
+                    logger.printLn("Group " + grpEntry.getKey() + ": "
                         + String.join(",", ((FileGroupCount) grpEntry.getValue()).getGroupDefinitions()));
                 })
                 .count();
             if (totalGroups == 0L) {
-                System.out.println("No groups exist");
+                logger.printLn("No groups exist");
             }
         } else if (commandParts.length == 2) {
             String groupName = normalizeGroupNameOrPrintError(commandParts[1]);
             FileGroupCount group = groupName == null ? null : getGroupOrPrintError(groupName, statsByExtension);
             if (group != null) {
-                System.out.println("group " + commandParts[1] + " "
+                logger.printLn("group " + commandParts[1] + " "
                     + String.join(",", group.getGroupDefinitions()));
                 printGroupExtensions(group.getExtensions());
             }
@@ -156,7 +161,7 @@ public class FileCountRunner {
     private void unrollGroup(String command, Map<String, FileCountEntry> statsByExtension) {
         String[] commandParts = command.split(" ");
         if (commandParts.length != 2) {
-            System.err.println("Invalid rmgroup command! Expected rmgroup <name>, e.g. rmgroup images");
+            logger.printError("Invalid rmgroup command! Expected rmgroup <name>, e.g. rmgroup images");
             return;
         }
 
@@ -164,17 +169,17 @@ public class FileCountRunner {
         FileGroupCount group = groupName == null ? null : getGroupOrPrintError(groupName, statsByExtension);
         if (group != null) {
             List<FileExtensionCount> extensions = group.getExtensions();
-            System.out.println("Confirm removal of group '" + groupName + "'? This will restore "
+            logger.printLn("Confirm removal of group '" + groupName + "'? This will restore "
                 + extensions.size() + " entries:");
             printGroupExtensions(extensions);
 
-            System.out.print("Type 'y' to confirm removal");
-            String input = scanner.nextLine();
+            logger.printLn("Type 'y' to confirm removal");
+            String input = logger.getNextLine();
             if ("y".equalsIgnoreCase(input)) {
                 group.getExtensions().forEach(ext -> statsByExtension.put(ext.getExtension(), ext));
                 statsByExtension.remove(groupName);
             } else {
-                System.out.println("Aborted removal of the group");
+                logger.printLn("Aborted removal of the group");
             }
         }
     }
@@ -187,13 +192,13 @@ public class FileCountRunner {
             .peek(entry -> groupNames.add(entry.getKey()))
             .collect(Collectors.toList());
         if (groupEntries.isEmpty()) {
-            System.out.println("There currently are no groups.");
+            logger.printLn("There currently are no groups.");
         } else {
-            System.out.println("Confirm removal of " + groupEntries.size() + " groups: "
+            logger.printLn("Confirm removal of " + groupEntries.size() + " groups: "
                 + String.join(", ", groupNames));
-            System.out.println("The statistics for the individual file extensions will be restored.");
+            logger.printLn("The statistics for the individual file extensions will be restored.");
             System.out.print("Type 'y' to confirm removal: ");
-            String input = scanner.nextLine();
+            String input = logger.getNextLine();
 
             if ("y".equalsIgnoreCase(input)) {
                 long extensionsRestored = groupEntries.stream()
@@ -201,9 +206,9 @@ public class FileCountRunner {
                     .flatMap(grp -> grp.getValue().getExtensions().stream())
                     .peek(extEntry -> statsByExtension.put(extEntry.getExtension(), extEntry))
                     .count();
-                System.out.println("Restored " + extensionsRestored + " file extension entries");
+                logger.printLn("Restored " + extensionsRestored + " file extension entries");
             } else {
-                System.out.println("Aborted removal of groups");
+                logger.printLn("Aborted removal of groups");
             }
         }
     }
@@ -211,7 +216,7 @@ public class FileCountRunner {
     private void toggleDetails() {
         boolean newDetailsValue = !configuration.getValue(FILE_COUNT_DETAILED_GROUPS);
         configuration.setValue(FILE_COUNT_DETAILED_GROUPS, newDetailsValue);
-        System.out.println("File extensions of groups are now " + (newDetailsValue ? "shown" : "hidden"));
+        logger.printLn("File extensions of groups are now " + (newDetailsValue ? "shown" : "hidden"));
     }
 
     private void saveConfiguration(Map<String, FileCountEntry> statsByExtension) {
@@ -220,14 +225,14 @@ public class FileCountRunner {
             .map(entry -> (Map.Entry<String, FileGroupCount>) (Map.Entry) entry)
             .collect(Collectors.toList());
         if (groupEntries.isEmpty()) {
-            System.err.println("There are no group entries to save");
+            logger.printError("There are no group entries to save");
         } else {
             String groupDefinitions = groupEntries.stream()
                 .map(grp -> grp.getKey() + " " + String.join(",", grp.getValue().getGroupDefinitions()))
                 .collect(Collectors.joining("; "));
             configuration.setValue(FILE_COUNT_GROUPS, groupDefinitions);
             configuration.save();
-            System.out.println("Saved group definitions to the file");
+            logger.printLn("Saved group definitions to the file");
         }
     }
 
@@ -235,19 +240,19 @@ public class FileCountRunner {
         boolean formatSize = configuration.getValue(FORMAT_FILE_SIZE);
 
         for (FileExtensionCount extension : extensions) {
-            System.out.println(" * " + formatEntry(extension.getExtension(), extension, formatSize));
+            logger.printLn(" * " + formatEntry(extension.getExtension(), extension, formatSize));
         }
     }
 
     @Nullable
-    private static FileGroupCount getGroupOrPrintError(String groupName, Map<String, FileCountEntry> statsByExtension) {
+    private FileGroupCount getGroupOrPrintError(String groupName, Map<String, FileCountEntry> statsByExtension) {
         FileCountEntry entry = statsByExtension.get(groupName);
         if (entry instanceof FileGroupCount) {
             return (FileGroupCount) entry;
         } else if (entry == null) {
-            System.err.println("There is no group with name '" + groupName + "'");
+            logger.printError("There is no group with name '" + groupName + "'");
         } else {
-            System.err.println("Entry '" + groupName + "' is a file extension, not a group!");
+            logger.printError("Entry '" + groupName + "' is a file extension, not a group!");
         }
         return null;
     }
@@ -276,12 +281,12 @@ public class FileCountRunner {
     }
 
     @Nullable
-    private static String normalizeGroupNameOrPrintError(String groupName) {
+    private String normalizeGroupNameOrPrintError(String groupName) {
         if (groupName.equals(NO_EXTENSION_TEXT)) {
-            System.err.println("Invalid group name; \"" + NO_EXTENSION_TEXT
+            logger.printError("Invalid group name; \"" + NO_EXTENSION_TEXT
                 + "\" is how files without extension are identified");
         } else if (groupName.startsWith(".")) {
-            System.err.println("Group names may not start with a dot");
+            logger.printError("Group names may not start with a dot");
         } else {
             return LOWER_CAMEL.to(UPPER_CAMEL, groupName);
         }
@@ -291,7 +296,7 @@ public class FileCountRunner {
     private void handleSortCommand(String sortCommand, Map<String, FileCountEntry> stats) {
         String[] cmdParts = sortCommand.split(" ");
         if (cmdParts.length < 2) {
-            System.err.println("Invalid sort command! Expected 'sort size' or 'sort count asc'");
+            logger.printError("Invalid sort command! Expected 'sort size' or 'sort count asc'");
             return;
         }
 
@@ -306,7 +311,7 @@ public class FileCountRunner {
                 comparator = createComparator(FileCountEntry::getCount, isDescending);
                 break;
             default:
-                System.err.println("Unknown sort property. Use size or count");
+                logger.printError("Unknown sort property. Use size or count");
                 return;
         }
 
@@ -317,7 +322,7 @@ public class FileCountRunner {
         stats.entrySet().stream()
             .sorted(Map.Entry.comparingByValue(comparator))
             .forEach(entry -> {
-                System.out.println(formatEntry(entry.getKey(), entry.getValue(), formatFileSize));
+                logger.printLn(formatEntry(entry.getKey(), entry.getValue(), formatFileSize));
                 totalEntry.add(entry.getValue());
 
                 if (includeGroupDetails && entry.getValue() instanceof FileGroupCount) {
@@ -325,12 +330,12 @@ public class FileCountRunner {
                     group.getExtensions().stream()
                         .sorted(comparator)
                         .forEach(ext -> {
-                            System.out.println(" * " + formatEntry(ext.getExtension(), ext, formatFileSize));
+                            logger.printLn(" * " + formatEntry(ext.getExtension(), ext, formatFileSize));
                         });
                 }
             });
-        System.out.println();
-        System.out.println(formatEntry("Total", totalEntry, formatFileSize));
+        logger.printLn("");
+        logger.printLn(formatEntry("Total", totalEntry, formatFileSize));
     }
 
     private static <V extends Comparable<V>> Comparator<FileCountEntry> createComparator(
@@ -348,21 +353,21 @@ public class FileCountRunner {
     }
 
     private void outputHelp() {
-        System.out.println("- Use 'sort' to output results: sort <size/count> [desc], e.g.");
-        System.out.println("  * sort size");
-        System.out.println("  * sort count desc");
-        System.out.println("- Use 'group' to group extensions together: group <groupName> <extensionList>, e.g.");
-        System.out.println("  * group images .jpg,.jpeg,.png");
-        System.out.println("  * group text .txt,.html,.md");
-        System.out.println("  * Regex possible with 'p:', e.g. group web p:\\.x?html?,.css,p:\\.php\\d?");
-        System.out.println("- Use 'groups' to view the definition of groups: groups [name]");
-        System.out.println("  * Optionally, provide the group name to see details (e.g. 'groups images')");
-        System.out.println("- Use 'details' to show/hide the file extensions of a group in the output");
-        System.out.println("- Use 'saveconf' to save the configurations (e.g. group definitions) "
+        logger.printLn("- Use 'sort' to output results: sort <size/count> [desc], e.g.");
+        logger.printLn("  * sort size");
+        logger.printLn("  * sort count desc");
+        logger.printLn("- Use 'group' to group extensions together: group <groupName> <extensionList>, e.g.");
+        logger.printLn("  * group images .jpg,.jpeg,.png");
+        logger.printLn("  * group text .txt,.html,.md");
+        logger.printLn("  * Regex possible with 'p:', e.g. group web p:\\.x?html?,.css,p:\\.php\\d?");
+        logger.printLn("- Use 'groups' to view the definition of groups: groups [name]");
+        logger.printLn("  * Optionally, provide the group name to see details (e.g. 'groups images')");
+        logger.printLn("- Use 'details' to show/hide the file extensions of a group in the output");
+        logger.printLn("- Use 'saveconf' to save the configurations (e.g. group definitions) "
             + "to the configuration file");
-        System.out.println("- Use 'rmgroup' to remove a group.");
-        System.out.println("  * The extensions of the group will be restored as individual entries");
-        System.out.println("- Use 'rmgroups' to delete ALL groups and restore the original extensions.");
-        System.out.println("- Use 'exit' to quit.");
+        logger.printLn("- Use 'rmgroup' to remove a group.");
+        logger.printLn("  * The extensions of the group will be restored as individual entries");
+        logger.printLn("- Use 'rmgroups' to delete ALL groups and restore the original extensions.");
+        logger.printLn("- Use 'exit' to quit.");
     }
 }

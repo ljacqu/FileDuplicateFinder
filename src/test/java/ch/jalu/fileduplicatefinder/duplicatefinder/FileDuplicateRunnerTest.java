@@ -4,6 +4,7 @@ import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
 import ch.jalu.fileduplicatefinder.hashing.HashingAlgorithm;
 import ch.jalu.fileduplicatefinder.duplicatefinder.output.DuplicateEntryOutputter;
+import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -40,7 +41,8 @@ class FileDuplicateRunnerTest {
         FileHasherFactory fileHasherFactory = mock(FileHasherFactory.class);
         DuplicateEntryOutputter entryOutputter = mock(DuplicateEntryOutputter.class);
         FolderPairDuplicatesCounter folderDuplicatesCounter = mock(FolderPairDuplicatesCounter.class);
-        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter);
+        TaskWriterReader logger = mock(TaskWriterReader.class);
+        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter, logger);
 
         given(configuration.getValueOrPrompt(DUPLICATE_FOLDER)).willReturn(tempFolder);
         given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");
@@ -71,7 +73,8 @@ class FileDuplicateRunnerTest {
         FileHasherFactory fileHasherFactory = mock(FileHasherFactory.class);
         DuplicateEntryOutputter entryOutputter = mock(DuplicateEntryOutputter.class);
         FolderPairDuplicatesCounter folderDuplicatesCounter = mock(FolderPairDuplicatesCounter.class);
-        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter);
+        TaskWriterReader logger = mock(TaskWriterReader.class);
+        FileDuplicateRunner runner = new FileDuplicateRunner(configuration, fileHasherFactory, folderDuplicatesCounter, entryOutputter, logger);
 
         given(configuration.getValueOrPrompt(DUPLICATE_FOLDER)).willReturn(tempFolder);
         given(configuration.getValue(DUPLICATE_FILTER_WHITELIST)).willReturn("");

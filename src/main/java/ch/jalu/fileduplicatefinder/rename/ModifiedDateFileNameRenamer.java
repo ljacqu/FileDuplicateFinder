@@ -1,5 +1,6 @@
 package ch.jalu.fileduplicatefinder.rename;
 
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.io.MoreFiles;
 
@@ -13,18 +14,12 @@ import java.util.Map;
 
 public class ModifiedDateFileNameRenamer extends FileRenamer {
 
-    private final String replacementPattern;
-    private final DateTimeFormatter dateFormatter;
-    private Map<String, String> renamings;
-
-    public ModifiedDateFileNameRenamer(Path folder, String replacementPattern, DateTimeFormatter dateFormatter) {
-        super(folder);
-        this.replacementPattern = replacementPattern;
-        this.dateFormatter = dateFormatter;
+    public ModifiedDateFileNameRenamer(Path folder, WriterReader logger) {
+        super(folder, logger);
     }
 
-    public Map<String, String> generateRenamingsPreview() {
-        renamings = new HashMap<>();
+    public Map<String, String> generateRenamingsPreview(String replacementPattern, DateTimeFormatter dateFormatter) {
+        Map<String, String> renamings = new HashMap<>();
         streamFiles()
             .forEach(file -> {
                 LocalDateTime modifiedDate = getLastModifiedDate(file);
@@ -37,11 +32,7 @@ public class ModifiedDateFileNameRenamer extends FileRenamer {
                     .replace("{ext}", MoreFiles.getFileExtension(file));
                 renamings.put(filename, newName);
             });
-        return renamings;
-    }
-
-    @Override
-    public Map<String, String> getRenamings() {
+        setRenamings(renamings);
         return renamings;
     }
 

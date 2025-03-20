@@ -1,8 +1,8 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

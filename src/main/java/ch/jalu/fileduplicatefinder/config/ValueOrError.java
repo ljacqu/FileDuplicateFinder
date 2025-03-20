@@ -1,8 +1,7 @@
 package ch.jalu.fileduplicatefinder.config;
 
 import com.google.common.base.Preconditions;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Encapsulates a value or an error. Exactly one field is always non-null.

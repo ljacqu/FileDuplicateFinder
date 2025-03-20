@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder.output;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
+import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import com.google.common.collect.ImmutableMap;
 import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.Test;
@@ -120,7 +121,7 @@ class ConsoleResultOutputterTest {
         private final List<String> lines = new ArrayList<>();
 
         public TestConsoleResultOutputter(FileUtilConfiguration configuration) {
-            super(configuration);
+            super(configuration, mock(TaskWriterReader.class));
         }
 
         @Override

@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static ch.jalu.fileduplicatefinder.config.property.JfuOptionalProperty.newOptionalDirectoryProperty;
+import static ch.jalu.fileduplicatefinder.config.property.JfuOptionalProperty.newOptionalRegexProperty;
 import static ch.jalu.fileduplicatefinder.config.property.JfuOptionalProperty.newOptionalStringProperty;
 
 /**
@@ -37,11 +38,12 @@ public final class FileUtilSettings implements SettingsHolder {
     public static final JfuOptionalProperty<Path> RENAME_FOLDER = newOptionalDirectoryProperty("rename.folder");
 
     @Comment("Regex rename: regex to match files by (e.g. IMG_E(\\d+)\\.JPG)")
-    public static final JfuRegexProperty RENAME_REGEX_FROM =
-        new JfuRegexProperty("rename.regex.from", Pattern.compile("IMG_E(\\d+)\\.JPG"));
+    public static final JfuOptionalProperty<Pattern> RENAME_REGEX_FROM =
+        newOptionalRegexProperty("rename.regex.from");
 
     @Comment("Regex rename: what to rename files to (use $1 etc. for capturing groups, e.g. IMG_$1E.JPG)")
-    public static final JfuStringProperty RENAME_REGEX_TO = new JfuStringProperty("rename.regex.to", "IMG_$1E.JPG");
+    public static final JfuOptionalProperty<String> RENAME_REGEX_TO =
+        newOptionalStringProperty("rename.regex.to");
 
     @Comment({
         "",

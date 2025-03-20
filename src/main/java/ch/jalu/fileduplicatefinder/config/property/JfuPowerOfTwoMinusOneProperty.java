@@ -1,8 +1,7 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.math.IntMath.ceilingPowerOfTwo;
 

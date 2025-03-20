@@ -3,6 +3,7 @@ package ch.jalu.fileduplicatefinder.duplicatefinder.output;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.duplicatefinder.DuplicateEntry;
 import ch.jalu.fileduplicatefinder.duplicatefinder.FolderPair;
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -19,14 +20,17 @@ import static ch.jalu.fileduplicatefinder.utils.FileSizeUtils.formatToHumanReada
 public class ConsoleResultOutputter implements DuplicateEntryOutputter {
 
     private final FileUtilConfiguration configuration;
+    private final WriterReader logger;
 
-    public ConsoleResultOutputter(FileUtilConfiguration configuration) {
+    public ConsoleResultOutputter(FileUtilConfiguration configuration,
+                                  WriterReader logger) {
         this.configuration = configuration;
+        this.logger = logger;
     }
 
     @Override
     public void outputResult(List<DuplicateEntry> duplicates) {
-        System.out.println();
+        logger.printNewLine();
         if (duplicates.isEmpty()) {
             output("No duplicates found.");
         } else if (configuration.getValue(DUPLICATE_OUTPUT_DUPLICATES)) {
@@ -60,6 +64,6 @@ public class ConsoleResultOutputter implements DuplicateEntryOutputter {
     }
 
     protected void output(String str) {
-        System.out.println(str);
+        logger.printLn(str);
     }
 }

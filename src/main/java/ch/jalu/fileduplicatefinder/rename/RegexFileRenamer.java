@@ -1,34 +1,22 @@
 package ch.jalu.fileduplicatefinder.rename;
 
-import ch.jalu.fileduplicatefinder.utils.PathUtils;
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class RegexFileRenamer extends FileRenamer {
 
-    private final Path folder;
-    private final Pattern pattern;
-    private final String replacement;
-    private Map<String, String> renamings;
-
-    public RegexFileRenamer(Path folder, Pattern pattern, String replacement) {
-        super(folder);
-        this.folder = checkNotNull(folder, "folder");
-        this.pattern = checkNotNull(pattern, "pattern");
-        this.replacement = checkNotNull(replacement, "replacement");
+    public RegexFileRenamer(Path folder, WriterReader logger) {
+        super(folder, logger);
     }
 
-    public Map<String, String> generateRenamingsPreview() {
-        renamings = new LinkedHashMap<>();
-        PathUtils.list(folder)
-            .filter(Files::isRegularFile)
+    public Map<String, String> generateRenamingsPreview(Pattern pattern, String replacement) {
+        Map<String, String> renamings = new LinkedHashMap<>();
+        streamFiles()
             .forEach(file -> {
                 String fileName = file.getFileName().toString();
                 Matcher matcher = pattern.matcher(fileName);
@@ -36,11 +24,7 @@ public class RegexFileRenamer extends FileRenamer {
                     renamings.put(fileName, matcher.replaceAll(replacement));
                 }
             });
-        return renamings;
-    }
-
-    @Override
-    protected Map<String, String> getRenamings() {
+        setRenamings(renamings);
         return renamings;
     }
 }

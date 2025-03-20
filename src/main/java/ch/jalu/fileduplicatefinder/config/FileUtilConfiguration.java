@@ -5,8 +5,8 @@ import ch.jalu.configme.SettingsManagerBuilder;
 import ch.jalu.configme.utils.Utils;
 import ch.jalu.fileduplicatefinder.config.property.JfuOptionalProperty;
 import ch.jalu.fileduplicatefinder.config.property.JfuProperty;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;

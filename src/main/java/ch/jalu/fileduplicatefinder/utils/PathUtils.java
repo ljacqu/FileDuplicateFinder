@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.utils;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;

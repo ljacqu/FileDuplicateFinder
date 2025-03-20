@@ -2,8 +2,7 @@ package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
 import ch.jalu.configme.properties.types.PropertyType;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Property type that is by all Jalu file utils (JFU) properties to define the conversion from String to a property's

@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -22,7 +21,7 @@ class FolderDiffRunnerTest {
         String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         assumeTrue(os.contains("win"));
 
-        FolderDiffRunner diffRunner = new FolderDiffRunner(null, null);
+        FolderDiffRunner diffRunner = new FolderDiffRunner(null, null, null);
         String separator = File.separator;
 
         Path cPath1 = Paths.get("C:/fox/data");
@@ -49,10 +48,7 @@ class FolderDiffRunnerTest {
     @Test
     void shouldReturnFolderPrefixes_Linux() {
         // given
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        assumeFalse(os.contains("win"));
-
-        FolderDiffRunner diffRunner = new FolderDiffRunner(null, null);
+        FolderDiffRunner diffRunner = new FolderDiffRunner(null, null, null);
         String separator = File.separator;
 
         Path cPath1 = Paths.get("/home/fox/data");

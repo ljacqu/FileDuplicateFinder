@@ -2,11 +2,12 @@ package ch.jalu.fileduplicatefinder.folderdiff;
 
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.hashing.FileHasherFactory;
+import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.annotations.VisibleForTesting;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -27,10 +28,13 @@ public class FolderDiffRunner {
 
     private final FileUtilConfiguration configuration;
     private final FileHasherFactory fileHasherFactory;
+    private final WriterReader logger;
 
-    public FolderDiffRunner(FileUtilConfiguration configuration, FileHasherFactory fileHasherFactory) {
+    public FolderDiffRunner(FileUtilConfiguration configuration, FileHasherFactory fileHasherFactory,
+                            WriterReader logger) {
         this.configuration = configuration;
         this.fileHasherFactory = fileHasherFactory;
+        this.logger = logger;
     }
 
     public void run() {
@@ -64,12 +68,12 @@ public class FolderDiffRunner {
             .sorted(Comparator.comparing(FileDifference::getSortCodeForDiffType))
             .forEach(diff -> {
                 if (diff.getFolder1Element() == null) {
-                    System.out.println("+ " + folder2Prefix + diff.getFolder2Element());
+                    logger.printLn("+ " + folder2Prefix + diff.getFolder2Element());
                 } else if (diff.getFolder2Element() == null) {
-                    System.out.println("- " + folder1Prefix + diff.getFolder1Element());
+                    logger.printLn("- " + folder1Prefix + diff.getFolder1Element());
                 } else {
                     String actionPrefix = diff.wasModified() ? "*" : ">";
-                    System.out.println(actionPrefix + " " + folder1Prefix + diff.getFolder1Element().getName()
+                    logger.printLn(actionPrefix + " " + folder1Prefix + diff.getFolder1Element().getName()
                         + " -> " + folder2Prefix + diff.getFolder2Element().getName());
                 }
             });
@@ -99,7 +103,7 @@ public class FolderDiffRunner {
         }
 
         if (total == 0) {
-            System.out.println("Did not find any differences! Both folders match perfectly.");
+            logger.printLn("Did not find any differences! Both folders match perfectly.");
         } else {
             List<String> descriptions = List.of(
                 countByType.get("+") + " additions (+)",
@@ -107,7 +111,7 @@ public class FolderDiffRunner {
                 countByType.get("*") + " modifications (*)",
                 countByType.get(">") + " renamings (>)");
 
-            System.out.println("Found " + total + " changes: " +
+            logger.printLn("Found " + total + " changes: " +
                 descriptions.stream().filter(count -> !count.startsWith("null")).collect(Collectors.joining(", ")));
         }
     }
@@ -158,7 +162,7 @@ public class FolderDiffRunner {
     /**
      * Logs the progress of the folder diff to the console.
      */
-    private static final class ProgressUpdater implements FolderDiffProgressCallback {
+    private final class ProgressUpdater implements FolderDiffProgressCallback {
 
         private final ConsoleProgressListener scanProgressListener;
         private final ConsoleProgressListener analysisProgressListener;
@@ -170,7 +174,7 @@ public class FolderDiffRunner {
 
         @Override
         public void startScan() {
-            System.out.print("Scanning files:  ");
+            logger.print("Scanning files:  ");
         }
 
         @Override
@@ -180,8 +184,8 @@ public class FolderDiffRunner {
 
         @Override
         public void startAnalysis() {
-            System.out.println();
-            System.out.print("Comparing files: ");
+            logger.printLn("");
+            logger.print("Comparing files: ");
         }
 
         @Override
