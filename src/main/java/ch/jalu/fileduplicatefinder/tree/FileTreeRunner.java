@@ -8,8 +8,8 @@ import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Comparator;

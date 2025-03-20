@@ -4,8 +4,8 @@ import ch.jalu.fileduplicatefinder.ExitRunnerException;
 import ch.jalu.fileduplicatefinder.config.FileUtilConfiguration;
 import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.FileSizeUtils;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -2,8 +2,7 @@ package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
 import com.google.common.primitives.Ints;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Custom integer property impl. for Jalu file utils (JFU).

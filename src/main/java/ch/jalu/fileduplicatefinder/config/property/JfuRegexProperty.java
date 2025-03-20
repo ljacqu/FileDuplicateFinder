@@ -1,8 +1,8 @@
 package ch.jalu.fileduplicatefinder.config.property;
 
 import ch.jalu.configme.properties.convertresult.ConvertErrorRecorder;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 

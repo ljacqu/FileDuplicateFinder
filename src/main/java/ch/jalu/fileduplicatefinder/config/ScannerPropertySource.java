@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.config;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;

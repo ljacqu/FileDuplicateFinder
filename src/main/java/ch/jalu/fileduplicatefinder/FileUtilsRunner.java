@@ -13,8 +13,8 @@ import ch.jalu.fileduplicatefinder.output.TaskWriterReader;
 import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.rename.FileRenameRunner;
 import ch.jalu.fileduplicatefinder.tree.FileTreeRunner;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

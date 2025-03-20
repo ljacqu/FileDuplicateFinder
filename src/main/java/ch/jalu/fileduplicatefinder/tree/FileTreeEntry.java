@@ -1,6 +1,7 @@
 package ch.jalu.fileduplicatefinder.tree;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
+
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;

@@ -6,8 +6,8 @@ import ch.jalu.fileduplicatefinder.output.WriterReader;
 import ch.jalu.fileduplicatefinder.utils.ConsoleProgressListener;
 import ch.jalu.fileduplicatefinder.utils.PathUtils;
 import com.google.common.annotations.VisibleForTesting;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Comparator;

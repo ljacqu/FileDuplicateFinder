@@ -1,8 +1,7 @@
 package ch.jalu.fileduplicatefinder.folderdiff;
 
 import com.google.common.base.Preconditions;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class FileDifference {
 
