@@ -90,8 +90,7 @@ public class FileUtilsRunner {
             new ConsoleResultOutputter(configuration, contextLogger), contextLogger);
     }
 
-    @Nullable
-    private static FileUtilConfiguration createConfiguration(Scanner scanner, String... args) {
+    private static @Nullable FileUtilConfiguration createConfiguration(Scanner scanner, String... args) {
         Path userConfig = null;
         if (args != null && args.length > 0) {
             userConfig = Paths.get(args[0]);

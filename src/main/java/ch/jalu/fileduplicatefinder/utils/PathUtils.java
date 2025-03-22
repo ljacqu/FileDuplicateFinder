@@ -80,8 +80,7 @@ public final class PathUtils {
      * @param path the path to toString (if not null)
      * @return string of the path, or null
      */
-    @Nullable
-    public static String toStringNullSafe(@Nullable Path path) {
+    public static @Nullable String toStringNullSafe(@Nullable Path path) {
         return path == null ? null : path.toString();
     }
 }

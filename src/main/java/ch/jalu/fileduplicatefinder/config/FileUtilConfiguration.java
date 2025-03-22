@@ -107,8 +107,7 @@ public class FileUtilConfiguration {
         return ValueOrError.forValue(settingsManager.getProperty(property));
     }
 
-    @Nullable
-    private String getValueFromOverridingSources(String path) {
+    private @Nullable String getValueFromOverridingSources(String path) {
         String value = scannerPropertySource.getValue(path);
         if (value != null) {
             return value;

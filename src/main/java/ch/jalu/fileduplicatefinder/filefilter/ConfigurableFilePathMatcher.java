@@ -43,8 +43,7 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
      * @param filter the filter to create a path matcher for
      * @return path matcher with the filter, or null
      */
-    @Nullable
-    private static PathMatcher toWildcardPattern(String filter) {
+    private static @Nullable PathMatcher toWildcardPattern(String filter) {
         if (filter.isEmpty()) {
             return null;
         }
@@ -62,8 +61,7 @@ public class ConfigurableFilePathMatcher implements FilePathMatcher {
      * @param isMin true to match files which are at least the given size, false for a matcher {@code size >= sizeInMb}
      * @return path matcher for the given size, or null if the argument is not positive
      */
-    @Nullable
-    private static PathMatcher toSizeFilter(double sizeInMb, boolean isMin) {
+    private static @Nullable PathMatcher toSizeFilter(double sizeInMb, boolean isMin) {
         if (sizeInMb <= 0.0) {
             return null;
         }

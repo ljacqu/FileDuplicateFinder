@@ -244,8 +244,8 @@ public class FileCountRunner {
         }
     }
 
-    @Nullable
-    private FileGroupCount getGroupOrPrintError(String groupName, Map<String, FileCountEntry> statsByExtension) {
+    private @Nullable FileGroupCount getGroupOrPrintError(String groupName,
+                                                          Map<String, FileCountEntry> statsByExtension) {
         FileCountEntry entry = statsByExtension.get(groupName);
         if (entry instanceof FileGroupCount) {
             return (FileGroupCount) entry;
@@ -280,8 +280,7 @@ public class FileCountRunner {
         return entryWithExtension == null ? Stream.empty() : Stream.of((FileExtensionCount) entryWithExtension);
     }
 
-    @Nullable
-    private String normalizeGroupNameOrPrintError(String groupName) {
+    private @Nullable String normalizeGroupNameOrPrintError(String groupName) {
         if (groupName.equals(NO_EXTENSION_TEXT)) {
             logger.printError("Invalid group name; \"" + NO_EXTENSION_TEXT
                 + "\" is how files without extension are identified");

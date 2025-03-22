@@ -20,9 +20,8 @@ public class JfuBooleanProperty extends JfuProperty<Boolean> {
 
     private static final class BooleanPropertyType implements JfuPropertyType<Boolean> {
 
-        @Nullable
         @Override
-        public Boolean fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Boolean fromString(String value, ConvertErrorRecorder errorRecorder) {
             if ("true".equalsIgnoreCase(value) || "y".equalsIgnoreCase(value)) {
                 return true;
             } else if ("false".equalsIgnoreCase(value) || "n".equalsIgnoreCase(value)) {

@@ -33,9 +33,8 @@ public class JfuPowerOfTwoMinusOneProperty extends JfuProperty<Integer> {
 
         private final JfuIntegerProperty.IntegerPropertyType intType = new JfuIntegerProperty.IntegerPropertyType();
 
-        @Nullable
         @Override
-        public Integer fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Integer fromString(String value, ConvertErrorRecorder errorRecorder) {
             Integer intValue = intType.fromString(value, errorRecorder);
             if (intValue == null) {
                 return null;

@@ -21,9 +21,8 @@ public class JfuDirectoryProperty extends JfuProperty<Path> {
 
     private static final class JfuDirectoryPropertyType implements JfuPropertyType<Path> {
 
-        @Nullable
         @Override
-        public Path fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Path fromString(String value, ConvertErrorRecorder errorRecorder) {
             Path path = Paths.get(value);
             if (Files.isDirectory(path)) {
                 return path;
