@@ -17,13 +17,11 @@ public class FileDifference {
             "At least one folder element must be not null");
     }
 
-    @Nullable
-    public FileElement getFolder1Element() {
+    public @Nullable FileElement getFolder1Element() {
         return folder1Element;
     }
 
-    @Nullable
-    public FileElement getFolder2Element() {
+    public @Nullable FileElement getFolder2Element() {
         return folder2Element;
     }
 

@@ -27,8 +27,7 @@ public class FileTreeGenerator {
         return visit(root, progressCallback);
     }
 
-    @Nullable
-    private FileTreeEntry visit(Path path, Runnable progressCallback) {
+    private @Nullable FileTreeEntry visit(Path path, Runnable progressCallback) {
         if (Files.isRegularFile(path)) {
             progressCallback.run();
             FileTreeEntry entry = new FileTreeEntry(path);

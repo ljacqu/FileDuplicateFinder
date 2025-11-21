@@ -217,8 +217,7 @@ public class FileTreeRunner {
         return parameters;
     }
 
-    @Nullable
-    private Long getConfiguredNumberOfBytesOrNull(JfuDoubleProperty megaBytesProperty, boolean forcePrompt) {
+    private @Nullable Long getConfiguredNumberOfBytesOrNull(JfuDoubleProperty megaBytesProperty, boolean forcePrompt) {
         double megabytes = configuration.getValue(megaBytesProperty, forcePrompt);
         if (megabytes < 0.0) {
             return null;
@@ -226,15 +225,13 @@ public class FileTreeRunner {
         return FileSizeUtils.megaBytesToBytes(megabytes);
     }
 
-    @Nullable
-    private Integer getConfiguredIntOrNullIfNegative(JfuIntegerProperty intProperty, boolean forcePrompt) {
+    private @Nullable Integer getConfiguredIntOrNullIfNegative(JfuIntegerProperty intProperty, boolean forcePrompt) {
         int value = configuration.getValue(intProperty, forcePrompt);
         return value < 0 ? null : value;
     }
 
-    @Nullable
-    private Pattern getConfiguredPatternOrNull(JfuRegexProperty patternProperty,
-                                               boolean forcePrompt) {
+    private @Nullable Pattern getConfiguredPatternOrNull(JfuRegexProperty patternProperty,
+                                                         boolean forcePrompt) {
         Pattern pattern = configuration.getValue(patternProperty, forcePrompt);
         return pattern.pattern().isEmpty() ? null : pattern;
     }

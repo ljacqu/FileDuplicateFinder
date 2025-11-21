@@ -27,9 +27,8 @@ public class JfuEnumProperty<E extends Enum<E>> extends JfuProperty<E> {
             this.enumType = enumType;
         }
 
-        @Nullable
         @Override
-        public E fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable E fromString(String value, ConvertErrorRecorder errorRecorder) {
             E parsed = toEnumEntry(value);
             if (parsed == null) {
                 errorRecorder.setHasError("Invalid entry. Possible values: "

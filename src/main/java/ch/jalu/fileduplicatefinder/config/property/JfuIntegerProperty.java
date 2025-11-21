@@ -21,9 +21,8 @@ public class JfuIntegerProperty extends JfuProperty<Integer> {
 
     static final class IntegerPropertyType implements JfuPropertyType<Integer> {
 
-        @Nullable
         @Override
-        public Integer fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Integer fromString(String value, ConvertErrorRecorder errorRecorder) {
             Integer parsed = Ints.tryParse(value);
             if (parsed == null) {
                 errorRecorder.setHasError("Invalid input; please provide an integer (e.g. 3 or 20)");

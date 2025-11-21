@@ -23,9 +23,8 @@ public class JfuRegexProperty extends JfuProperty<Pattern> {
 
     private static final class RegexPropertyType implements JfuPropertyType<Pattern> {
 
-        @Nullable
         @Override
-        public Pattern fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Pattern fromString(String value, ConvertErrorRecorder errorRecorder) {
             try {
                 return Pattern.compile(value);
             } catch (PatternSyntaxException e) {

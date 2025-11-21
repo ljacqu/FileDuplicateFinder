@@ -21,9 +21,8 @@ public class JfuDoubleProperty extends JfuProperty<Double> {
 
     private static final class DoublePropertyType implements JfuPropertyType<Double> {
 
-        @Nullable
         @Override
-        public Double fromString(String value, ConvertErrorRecorder errorRecorder) {
+        public @Nullable Double fromString(String value, ConvertErrorRecorder errorRecorder) {
             Double parsed = Doubles.tryParse(value);
             if (parsed == null) {
                 errorRecorder.setHasError("Invalid input; please provide a number (e.g. 3 or 3.14)");

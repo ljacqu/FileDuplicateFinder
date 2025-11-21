@@ -149,8 +149,7 @@ public class FolderDiffRunner {
         return new String[]{ "folder1" + separator, "folder2" + separator };
     }
 
-    @Nullable
-    private String getParentName(Path path) {
+    private @Nullable String getParentName(Path path) {
         Path parent = path.getParent();
         if (parent != null) {
             Path parentFileName = parent.getFileName(); // null for Windows drives, e.g. for Paths.get("C:/")

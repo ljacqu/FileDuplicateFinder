@@ -45,16 +45,14 @@ public class ValueOrError<T> {
     /**
      * @return the value; null if there is an error, otherwise guaranteed not-null
      */
-    @Nullable
-    public T getValue() {
+    public @Nullable T getValue() {
         return value;
     }
 
     /**
      * @return the error; null if there is a value, otherwise guaranteed not-null
      */
-    @Nullable
-    public String getErrorReason() {
+    public @Nullable String getErrorReason() {
         return errorReason;
     }
 }

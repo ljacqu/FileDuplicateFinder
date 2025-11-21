@@ -97,8 +97,7 @@ public class PropertyFileResource implements PropertyResource {
         }
     }
 
-    @Nullable
-    private <T> String getExportValue(Property<T> property, ConfigurationData configurationData) {
+    private <T> @Nullable String getExportValue(Property<T> property, ConfigurationData configurationData) {
         Object exportValue = property.toExportValue(configurationData.getValue(property));
         if (exportValue == null) {
             return null;
@@ -139,44 +138,38 @@ public class PropertyFileResource implements PropertyResource {
             return properties.containsKey(path);
         }
 
-        @Nullable
         @Override
-        public Object getObject(String path) {
+        public @Nullable Object getObject(String path) {
             return getString(path);
         }
 
-        @Nullable
         @Override
-        public String getString(String path) {
+        public @Nullable String getString(String path) {
             return properties.getProperty(path);
         }
 
-        @Nullable
         @Override
-        public Integer getInt(String path) {
+        public @Nullable Integer getInt(String path) {
             String str = getString(path);
             return str == null ? null : Ints.tryParse(str);
         }
 
-        @Nullable
         @Override
-        public Double getDouble(String path) {
+        public @Nullable Double getDouble(String path) {
             String str = getString(path);
             return str == null ? null : Doubles.tryParse(str);
         }
 
-        @Nullable
         @Override
-        public Boolean getBoolean(String path) {
+        public @Nullable Boolean getBoolean(String path) {
             String str = getString(path);
             return ("true".equals(str) || "false".equals(str))
                 ? Boolean.valueOf(str)
                 : null;
         }
 
-        @Nullable
         @Override
-        public List<?> getList(String path) {
+        public @Nullable List<?> getList(String path) {
             throw new UnsupportedOperationException("Not supported by .properties");
         }
 

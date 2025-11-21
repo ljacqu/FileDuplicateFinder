@@ -12,9 +12,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface JfuPropertyType<T> extends PropertyType<T> {
 
-    @Nullable
     @Override
-    default T convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
+    default @Nullable T convert(@Nullable Object object, ConvertErrorRecorder errorRecorder) {
         if (object instanceof String) {
             return fromString((String) object, errorRecorder);
         }
@@ -33,7 +32,6 @@ public interface JfuPropertyType<T> extends PropertyType<T> {
      *                      "fully" correct)
      * @return converted value, or null
      */
-    @Nullable
-    T fromString(String value, ConvertErrorRecorder errorRecorder);
+    @Nullable T fromString(String value, ConvertErrorRecorder errorRecorder);
 
 }

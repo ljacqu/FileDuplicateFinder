@@ -15,8 +15,7 @@ public class ScannerPropertySource {
         this.scanner = scanner;
     }
 
-    @Nullable
-    public String getValue(String path) {
+    public @Nullable String getValue(String path) {
         return scannerInputs.get(path);
     }
 
