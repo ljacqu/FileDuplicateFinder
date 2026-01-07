@@ -6,6 +6,11 @@ updates:
     interval: daily
   open-pull-requests-limit: 10
   target-branch: dependencies
+  ignore:
+    - dependency-name: "org.junit.jupiter:junit-jupiter-api"
+      versions: [ ">= 6" ]
+    - dependency-name: "org.junit.jupiter:junit-jupiter-engine"
+      versions: [ ">= 6" ]
 
 - package-ecosystem: "github-actions"
   directory: "/"
